@@ -14,6 +14,7 @@ function! hopping#load_vital()
 	else
 		let s:V = vital#of("hopping")
 	endif
+	call s:V.unload()
 
 	let s:U = s:V.import("Unlocker.Rocker")
 	let s:H = s:V.import("Unlocker.Holder")
@@ -27,7 +28,7 @@ endfunction
 
 function! hopping#reload_vital()
 	unlet! s:V
-	let s:V = hopping#vital()
+	let s:V = hopping#load_vital()
 endfunction
 call hopping#load_vital()
 
@@ -83,6 +84,10 @@ function! s:filter.set_buffer_text(text)
 " 	endif
 " 	let self.prev_text = a:text
 
+	if line("$") == self.buffer_lnum && self.buffer_lnum == len(a:text)
+		return
+	endif
+
 	silent % delete _
 	call setline(1, a:text)
 " 	call self.buffer.set(a:text)
@@ -109,7 +114,11 @@ endfunction
 
 function! s:filter.update(pat)
 	if a:pat != ""
-		call searchpos(a:pat, "c")
+		try
+			call searchpos(a:pat, "c")
+		catch /^Vim\%((\a\+)\)\=:E54/
+			return
+		endtry
 		let @/ = a:pat
 	endif
 
@@ -175,7 +184,8 @@ endfunction
 function! s:filter.on_enter(cmdline)
 	let self.buffer = s:H.make("Buffer.Text", "%")
 
-	let self.buffer_lnum   = line("$")
+	let self.buffer_lnum = line("$")
+	let self.search_reg = @/
 
 	let self.view = s:U.lock(s:H.make("Winview"))
 	let self.buffer_packer = s:make_packer(self.buffer.get())
@@ -198,6 +208,7 @@ function! s:filter.on_leave(cmdline)
 	call s:Highlight.clear_all()
 	let [pos, text] = self.buffer_packer.unpack(getpos("."))
 	call self.locker.unlock()
+	let @/ = self.search_reg
 	if self.is_stay == 0
 		call self.view.unlock()
 	endif
