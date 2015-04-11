@@ -1,0 +1,82 @@
+*hopping.txt*	カーソル下の単語を常にハイライトするプラグイン
+
+==============================================================================
+目次						*hopping-contents*
+
+概要				|hopping-introduction|
+インターフェース		|hopping-interface|
+  コマンド			  |hopping-commands|
+  キーマッピング		  |hopping-key-mappings|
+設定				|hopping-setting|
+  変数				  |hopping-variables|
+ハイライト			|hopping-highlight|
+FAQ				|hopping-faq|
+
+
+==============================================================================
+概要						*hopping-introduction*
+
+*hopping.vim* バッファラインをインクリメンタルに絞り込みを行うプラグインです。
+
+
+==============================================================================
+インターフェース				*hopping-interface*
+
+------------------------------------------------------------------------------
+コマンド					*hopping-commands*
+
+:HoppingStart [{input}]				*:HoppingStart*
+	バッファラインのフィルタリングを開始します。
+	{input} を渡すとその文字列が入力された状態で開始します。
+
+
+------------------------------------------------------------------------------
+キーマッピング					*hopping-key-mappings*
+
+<Plug>(hopping-start)				*<Plug>(hopping-start)*
+	|:HoppingStart| を呼び出します。
+
+
+==============================================================================
+設定						*hopping-setting*
+
+------------------------------------------------------------------------------
+変数						*hopping-variables*
+
+g:hopping#prompt				*g:hopping#prompt*
+	フィルタを入力するコマンドラインのプロンプトです。
+Default: >
+	let g:hopping#prompt = "Input:> "
+<
+
+==============================================================================
+ハイライト					*hopping-highlight*
+
+ハイライトの設定を行う辞書です。
+ハイライトの設定には以下のキーの値が設定できます。
+
+- "group"					*hopping-highlight-group*
+  ハイライトグループを設定します。
+  空の文字列が設定されているとハイライトはされません。
+
+- "priority"					*hopping-highlight-priority*
+  |matchadd()| の {priority} に設定される数値です。
+
+- "format"					*hopping-highlight-format*
+  単語をハイライトする際のフォーマットを設定します。
+
+Example: >
+	" 単語をアンダーラインでハイライトして、
+	" matchadd() の優先順位を 1000 にする
+	let g:hopping#highlight = {
+	\	"group"    : "hoppingUnderline",
+	\	"priority" : 1000
+	\}
+<
+==============================================================================
+FAQ						*hopping-faq*
+
+
+
+==============================================================================
+vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl
