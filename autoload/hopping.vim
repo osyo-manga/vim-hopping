@@ -198,12 +198,11 @@ function! s:filter.update(pat)
 
 	" 連続して絞り込む場合はバッファを更新しない
 	if (has_key(self, "__prev_pat") && stridx(a:pat, self.__prev_pat) == 0)
-\	&& get(self, "__prev_num") == len(text)
+\	&& line(".") == len(text)
 	else
 		call self.set_buffer_text(text)
 	endif
 	let self.__prev_pat = a:pat
-	let self.__prev_num = len(text)
 
 	if a:pat == ""
 		call self.view.relock()
