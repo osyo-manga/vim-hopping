@@ -12,6 +12,7 @@ function! hopping#load_vital()
 	if g:hopping#debug_vital
 		let s:V = vital#of("vital")
 	else
+
 		let s:V = vital#of("hopping")
 	endif
 	call s:V.unload()
@@ -138,34 +139,19 @@ endfunction
 
 
 
-
-
 let s:filter = {
 \	"name" : "IncFilter"
 \}
 
 
 function! s:filter.set_buffer_text(text)
-" 	if len(a:text) == len(get(self, "prev_text", []))
-" 		return
-" 	endif
-" 	let self.prev_text = a:text
-
-	if line("$") == self.buffer_lnum && self.buffer_lnum == len(a:text)
-		return
-	endif
 
 	silent % delete _
-	call setline(1, map(copy(a:text), "v:val.line"))
+	let format = "%". (max([len(self.buffer_lnum), &l:numberwidth])-1). "d %s"
+	call setline(1, map(copy(a:text), "printf(format, v:val.lnum, v:val.line)"))
 " 	call self.buffer.set(a:text)
 
 	let &modified = 0
-endfunction
-
-
-function! s:filter.reset()
-	call s:Highlight.clear_all()
-	call s:Highlight.highlight("cursor", "Cursor", s:Position.as_pattern(getpos(".")))
 endfunction
 
 
@@ -271,10 +257,14 @@ function! s:filter.on_enter(cmdline)
 \		"&modifiable",
 \		"&statusline",
 \		"&cursorline",
+\		"&number",
 \		s:H.make("Buffer.Undofile"),
 \	)
 	let &modifiable = 1
 	let &cursorline = 1
+	let &number = 0
+	call self.set_buffer_text(self.buffer_packer.__text)
+	call s:Highlight.highlight('linnr', "LineNR", '^\s\+\d\+ ')
 	call self.update("")
 endfunction
 
