@@ -147,8 +147,12 @@ let s:filter = {
 function! s:filter.set_buffer_text(text)
 
 	silent % delete _
-	let format = "%". (max([len(self.buffer_lnum), &l:numberwidth])-1). "d %s"
-	call setline(1, map(copy(a:text), "printf(format, v:val.lnum, v:val.line)"))
+	if self.number
+		let format = "%". (max([len(self.buffer_lnum), &l:numberwidth])-1). "d %s"
+		call setline(1, map(copy(a:text), "printf(format, v:val.lnum, v:val.line)"))
+	else
+		call setline(1, map(copy(a:text), "v:val.line"))
+	endif
 " 	call self.buffer.set(a:text)
 
 	let &modified = 0
@@ -253,18 +257,21 @@ function! s:filter.on_enter(cmdline)
 	let self.is_stay = 0
 	let self.locker = s:U.lock(
 \		self.buffer,
-\		"&modified",
-\		"&modifiable",
+\		"&l:modified",
+\		"&l:modifiable",
 \		"&statusline",
-\		"&cursorline",
-\		"&number",
+\		"&l:cursorline",
+\		"&l:number",
 \		s:H.make("Buffer.Undofile"),
 \	)
-	let &modifiable = 1
-	let &cursorline = 1
-	let &number = 0
-	call self.set_buffer_text(self.buffer_packer.__text)
-	call s:Highlight.highlight('linnr', "LineNR", '^\s\+\d\+ ')
+	let &l:modifiable = 1
+	let &l:cursorline = 1
+	let self.number = &l:number
+	if self.number
+		call self.set_buffer_text(self.buffer_packer.__text)
+		call s:Highlight.highlight('linnr', "LineNR", '^\s\+\d\+ ')
+		let &l:number = 0
+	endif
 	call self.update("")
 endfunction
 
