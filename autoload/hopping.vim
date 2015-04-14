@@ -5,13 +5,6 @@ set cpo&vim
 let g:hopping#debug_vital = get(g:, "hopping#debug_vital", 0)
 
 
-function! s:mkdir(dir)
-	if !isdirectory(a:dir)
-		call mkdir(a:dir, "p")
-	endif
-endfunction
-
-
 function! hopping#load_vital()
 	if exists("s:V")
 		return s:V
@@ -24,12 +17,12 @@ function! hopping#load_vital()
 	endif
 	call s:V.unload()
 
-	let s:U = s:V.import("Unlocker.Rocker")
-	let s:H = s:V.import("Unlocker.Holder")
+	let s:Rocker = s:V.import("Unlocker.Rocker")
+	let s:Holder = s:V.import("Unlocker.Holder")
 	let s:Highlight = s:V.import("Coaster.Highlight")
 	let s:Position = s:V.import("Coaster.Position")
 	let s:Commandline  = s:V.import("Over.Commandline")
-	let s:L = s:V.import("Data.List")
+	let s:List = s:V.import("Data.List")
 	let s:Undo = s:V.import("Unlocker.Rocker.Undotree")
 
 	return s:V
@@ -75,7 +68,7 @@ function! s:text.pack(pat, cursor)
 	let pos = a:cursor
 	let pos[0] = self.base_lnum(pos[0])
 	let text = self.filter(a:pat)
-	let pos[0] = s:L.binary_search(text, pos[0], self.comp_lnum, self) + 1
+	let pos[0] = s:List.binary_search(text, pos[0], self.comp_lnum, self) + 1
 	return [pos, text]
 endfunction
 
@@ -215,14 +208,14 @@ endfunction
 
 
 function! s:filter.on_enter(cmdline)
-	let self.buffer = s:H.make("Buffer.Text", "%")
+	let self.buffer = s:Holder.make("Buffer.Text", "%")
 
 	let self.buffer_lnum = line("$")
 
-	let self.view = s:U.lock(s:H.make("Winview"))
+	let self.view = s:Rocker.lock(s:Holder.make("Winview"))
 	let self.buffer_packer = s:make_text(self.buffer.get())
 	let self.is_stay = 0
-	let self.locker = s:U.lock(
+	let self.locker = s:Rocker.lock(
 \		self.buffer,
 \		"&l:modified",
 \		"&l:modifiable",
