@@ -112,13 +112,14 @@ function! s:filter.set_buffer_text(text)
 endfunction
 
 
-function! s:filter.highlight(pat, pos)
+function! s:filter.highlight(pat, ...)
+	let pos = get(a:, 1, getpos("."))
 	if a:pat == ""
 		call s:Highlight.clear("search")
 	else
 		call s:Highlight.highlight("search", "Search", a:pat)
 	endif
-	call s:Highlight.highlight("cursor", "Cursor", s:Position.as_pattern(a:pos))
+	call s:Highlight.highlight("cursor", "Cursor", s:Position.as_pattern(pos))
 endfunction
 
 
@@ -150,14 +151,14 @@ function! s:filter.update(pat)
 	endif
 	let self.__prev_pat = a:pat
 
-	if a:pat == ""
+	if a:pat == "" || self.buffer_lnum == len(text)
 		call self.view.relock()
+		call cursor(line("."), col(".") + self.col_offset)
 	else
 		call cursor(pos[0], pos[1])
 	endif
 
-	call self.highlight(a:pat, pos)
-
+	call self.highlight(a:pat, getpos("."))
 endfunction
 
 
@@ -192,10 +193,12 @@ endfunction
 function! s:filter.on_execute_pre(cmdline)
 	let self.is_execute = 1
 	if self.is_stay
-		call a:cmdline.setline("")
 		let pos = s:Position.as(getpos("."))
 		let [pos, text] = self.buffer_packer.unpack(pos)
 		call cursor(pos[0], pos[1] - self.col_offset)
+	else
+		call self.locker.unlock()
+		let self.is_stay = 1
 	endif
 endfunction
 
@@ -239,7 +242,16 @@ function! s:filter.on_leave(cmdline)
 endfunction
 
 
-let s:cmdline = s:Commandline.make_standard_search("Input:> ")
+let s:cmdline = s:Commandline.make_standard("Input:> ")
+
+let s:execute = s:cmdline.get_module("Execute")
+function! s:execute.execute(cmdline)
+	if a:cmdline.get_module("IncFilter").is_stay == 0
+		call a:cmdline.execute(":normal! /" . a:cmdline.getline() . "\<CR>")
+	else
+		call a:cmdline.execute("")
+	endif
+endfunction
 
 call s:cmdline.connect("LockBuffer")
 call s:cmdline.connect(s:filter)
