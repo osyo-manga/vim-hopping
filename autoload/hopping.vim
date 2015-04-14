@@ -87,10 +87,6 @@ function! s:make_text(text)
 	let result = deepcopy(s:text)
 	let result.__text = a:text
 	let result.__text = map(a:text, '{ "line" : v:val, "lnum" : v:key+1 }')
-" 	let result.__text = {}
-" 	for i in range(len(a:text))
-" 		let result.__text[ printf("%06d", i) ] = a:text[i]
-" 	endfor
 	return result
 endfunction
 
@@ -112,7 +108,6 @@ function! s:filter.set_buffer_text(text)
 		call setline(1, map(copy(a:text), "v:val.line"))
 	endif
 	call setpos(".", pos)
-" 	call self.buffer.set(a:text)
 
 	let &modified = 0
 endfunction
@@ -164,7 +159,6 @@ function! s:filter.update(pat)
 
 	call self.highlight(a:pat, pos)
 
-" 	call self.highlight(a:pat, getpos("."))
 endfunction
 
 
