@@ -100,7 +100,7 @@ let s:filter = {
 function! s:filter.set_buffer_text(text)
 	let pos = getpos(".")
 	silent % delete _
-	if self.number
+	if self.show_number
 		let format = "%". (self.col_offset - 1). "d %s"
 		call setline(1, map(copy(a:text), "printf(format, v:val.lnum, v:val.line)"))
 	else
@@ -220,8 +220,8 @@ function! s:filter.on_enter(cmdline)
 	let &l:modifiable = 1
 	let &l:cursorline = 1
 
-	let self.number = &l:number
-	if self.number
+	let self.show_number = &l:number
+	if self.show_number
 		call s:Highlight.highlight('linenr', "LineNR", '^\s\+\d\+ ')
 		let &l:number = 0
 		let &listchars = substitute(&listchars, 'trail:.,\?', "", "g")
