@@ -5,6 +5,13 @@ set cpo&vim
 let g:hopping#debug_vital = get(g:, "hopping#debug_vital", 0)
 
 
+function! s:mkdir(dir)
+	if !isdirectory(a:dir)
+		call mkdir(a:dir, "p")
+	endif
+endfunction
+
+
 function! hopping#load_vital()
 	if exists("s:V")
 		return s:V
@@ -23,6 +30,7 @@ function! hopping#load_vital()
 	let s:Position = s:V.import("Coaster.Position")
 	let s:Commandline  = s:V.import("Over.Commandline")
 	let s:L = s:V.import("Data.List")
+	let s:Undo = s:V.import("Unlocker.Rocker.Undotree")
 
 	return s:V
 endfunction
@@ -222,7 +230,7 @@ function! s:filter.on_enter(cmdline)
 \		"&l:number",
 \		"&listchars",
 \		"@/",
-\		s:H.make("Buffer.Undofile"),
+\		s:Undo.make()
 \	)
 	let &l:modifiable = 1
 	let &l:cursorline = 1
