@@ -255,6 +255,9 @@ endfunction
 
 call s:cmdline.connect("LockBuffer")
 call s:cmdline.connect(s:filter)
+" NOTE: :digraphs is redraw, when start commandline.
+" https://github.com/osyo-manga/vital-over/issues/107
+call s:cmdline.disconnect("Digraphs")
 
 
 let g:hopping#prompt = get(g:, "hopping#prompt", "Input:> ")
