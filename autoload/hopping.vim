@@ -23,7 +23,6 @@ function! hopping#load_vital()
 	let s:Position = s:V.import("Coaster.Position")
 	let s:Commandline  = s:V.import("Over.Commandline")
 	let s:List = s:V.import("Data.List")
-	let s:Undo = s:V.import("Unlocker.Rocker.Undotree")
 
 	return s:V
 endfunction
@@ -104,13 +103,15 @@ let s:filter = {
 
 function! s:filter.set_buffer_text(text)
 
+	let pos = getpos(".")
 	silent % delete _
 	if self.number
-		let format = "%". (max([len(self.buffer_lnum), &l:numberwidth])-1). "d %s"
+		let format = "%". (self.col_offset - 1). "d %s"
 		call setline(1, map(copy(a:text), "printf(format, v:val.lnum, v:val.line)"))
 	else
 		call setline(1, map(copy(a:text), "v:val.line"))
 	endif
+	call setpos(".", pos)
 " 	call self.buffer.set(a:text)
 
 	let &modified = 0
@@ -201,29 +202,24 @@ function! s:filter.on_execute_pre(cmdline)
 		call a:cmdline.setline("")
 		let pos = s:Position.as(getpos("."))
 		let [pos, text] = self.buffer_packer.unpack(pos)
-		call self.set_buffer_text(text)
-		call cursor(pos[0], pos[1])
+		call cursor(pos[0], pos[1] - self.col_offset)
 	endif
 endfunction
 
 
 function! s:filter.on_enter(cmdline)
-	let self.buffer = s:Holder.make("Buffer.Text", "%")
-
 	let self.buffer_lnum = line("$")
+	let self.col_offset = max([strlen(self.buffer_lnum), &l:numberwidth])
 
 	let self.view = s:Rocker.lock(s:Holder.make("Winview"))
-	let self.buffer_packer = s:make_text(self.buffer.get())
+	let self.buffer_packer = s:make_text(getline(1, "$"))
 	let self.is_stay = 0
 	let self.locker = s:Rocker.lock(
-\		self.buffer,
-\		"&l:modified",
 \		"&l:modifiable",
 \		"&l:cursorline",
 \		"&l:number",
 \		"&listchars",
 \		"@/",
-\		s:Undo.make()
 \	)
 	let &l:modifiable = 1
 	let &l:cursorline = 1
@@ -234,6 +230,7 @@ function! s:filter.on_enter(cmdline)
 		let &l:number = 0
 		let &listchars = substitute(&listchars, 'trail:.,\?', "", "g")
 		call self.set_buffer_text(self.buffer_packer.__text)
+		call cursor(line("."), col(".") + self.col_offset)
 	endif
 
 	call self.update(a:cmdline.getline())
@@ -242,7 +239,6 @@ endfunction
 
 function! s:filter.on_leave(cmdline)
 	call s:Highlight.clear_all()
-	let [pos, text] = self.buffer_packer.unpack(getpos("."))
 	call self.locker.unlock()
 	if self.is_stay == 0
 		call self.view.unlock()
@@ -251,6 +247,8 @@ endfunction
 
 
 let s:cmdline = s:Commandline.make_standard_search("Input:> ")
+
+call s:cmdline.connect("LockBuffer")
 call s:cmdline.connect(s:filter)
 
 

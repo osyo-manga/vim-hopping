@@ -9,3 +9,4 @@ Over.Commandline
 Unlocker.Holder.Register
 Unlocker.Holder.Buffer.Undofile
 Unlocker.Rocker.Undotree
+Over.Commandline.Modules.LockBuffer
