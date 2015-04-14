@@ -1,12 +1,10 @@
 hopping
 e3250cf
 
+Data.List
+Over.Commandline
+Coaster.Highlight
 Unlocker.Holder
 Unlocker.Rocker
-Coaster.Highlight
 Coaster.Position
-Over.Commandline
-Unlocker.Holder.Register
-Unlocker.Holder.Buffer.Undofile
-Unlocker.Rocker.Undotree
 Over.Commandline.Modules.LockBuffer
