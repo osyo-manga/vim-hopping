@@ -127,6 +127,9 @@ endfunction
 
 
 function! s:filter.update(pat)
+	call s:Highlight.clear("search")
+	nohlsearch
+	
 	if a:pat != ""
 		try
 			call searchpos(a:pat, "c")
@@ -226,10 +229,10 @@ function! s:filter.on_enter(cmdline)
 
 	let self.number = &l:number
 	if self.number
-		call self.set_buffer_text(self.buffer_packer.__text)
 		call s:Highlight.highlight('linnr', "LineNR", '^\s\+\d\+ ')
 		let &l:number = 0
 		let &listchars = substitute(&listchars, 'trail:.,\?', "", "g")
+		call self.set_buffer_text(self.buffer_packer.__text)
 	endif
 
 	call self.update(a:cmdline.getline())
