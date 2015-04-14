@@ -98,7 +98,6 @@ let s:filter = {
 
 
 function! s:filter.set_buffer_text(text)
-
 	let pos = getpos(".")
 	silent % delete _
 	if self.number
@@ -220,7 +219,7 @@ function! s:filter.on_enter(cmdline)
 
 	let self.number = &l:number
 	if self.number
-		call s:Highlight.highlight('linnr', "LineNR", '^\s\+\d\+ ')
+		call s:Highlight.highlight('linenr', "LineNR", '^\s\+\d\+ ')
 		let &l:number = 0
 		let &listchars = substitute(&listchars, 'trail:.,\?', "", "g")
 		call self.set_buffer_text(self.buffer_packer.__text)
