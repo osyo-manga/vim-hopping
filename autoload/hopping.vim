@@ -207,7 +207,6 @@ function! s:filter.on_enter(cmdline)
 	let self.buffer = s:H.make("Buffer.Text", "%")
 
 	let self.buffer_lnum = line("$")
-	let self.search_reg = @/
 
 	let self.view = s:U.lock(s:H.make("Winview"))
 	let self.buffer_packer = s:make_text(self.buffer.get())
@@ -219,6 +218,7 @@ function! s:filter.on_enter(cmdline)
 \		"&l:cursorline",
 \		"&l:number",
 \		"&listchars",
+\		"@/",
 \		s:H.make("Buffer.Undofile"),
 \	)
 	let &l:modifiable = 1
@@ -240,7 +240,6 @@ function! s:filter.on_leave(cmdline)
 	call s:Highlight.clear_all()
 	let [pos, text] = self.buffer_packer.unpack(getpos("."))
 	call self.locker.unlock()
-	let @/ = self.search_reg
 	if self.is_stay == 0
 		call self.view.unlock()
 	endif

@@ -50,7 +50,7 @@ endfunction
 
 function! s:escape_special_key(key)
 	" Workaround : <C-?> https://github.com/osyo-manga/vital-palette/issues/5
-	if a:key == "<^?>"
+	if a:key ==# "<^?>"
 		return "\<C-?>"
 	endif
 	execute 'let result = "' . substitute(escape(a:key, '\"'), '\(<.\{-}>\)', '\\\1', 'g') . '"'
@@ -59,11 +59,12 @@ endfunction
 
 
 function! s:parse_lhs(text, ...)
-	let mode = get(a:, 1, '[nvoicsxl]')
-	if mode =~# '[ci]'
+	let mode = get(a:, 1, '[!nvoicsxl]')
+	" NOTE: :map! Surpport : https://github.com/osyo-manga/vital-palette/issues/4
+	if get(a:, 1, "") =~# '[!ci]'
 		let mode = '[!ci]'
 	endif
-	return matchstr(a:text, mode . '\s\+\zs\S\{-}\ze\s\+')
+	return matchstr(a:text, mode . '\{1,3\}\s*\zs\S\{-}\ze\s\+')
 endfunction
 
 
@@ -86,6 +87,7 @@ function! s:_maparg(name, mode, abbr, dict)
 	endif
 	return maparg(a:name, a:mode, a:abbr, a:dict)
 endfunction
+
 
 function! s:rhs_key_list(...)
 	let mode = get(a:, 1, "")

@@ -12,6 +12,7 @@ function! s:_vital_loaded(V)
 	let s:Value = a:V.import("Unlocker.Holder.Value")
 	let s:Variable = a:V.import("Unlocker.Holder.Variable")
 	let s:Multi = a:V.import("Unlocker.Holder.Multi")
+	let s:Register = a:V.import("Unlocker.Holder.Register")
 endfunction
 
 
@@ -20,6 +21,7 @@ function! s:_vital_depends()
 \		"Unlocker.Holder.Variable",
 \		"Unlocker.Holder.Value",
 \		"Unlocker.Holder.Multi",
+\		"Unlocker.Holder.Register",
 \	]
 endfunction
 
@@ -61,6 +63,7 @@ function! s:make(rhs, ...)
 \		 : s:is_holder(a:rhs)   ? a:rhs
 \		 : s:Value.is_makeable(a:rhs) ? s:Value.make(a:rhs)
 \		 : s:Variable.is_makeable(a:rhs) ? s:Variable.make(a:rhs)
+\		 : s:Register.is_makeable(a:rhs) ? s:Register.make(a:rhs)
 \		 : s:is_option(a:rhs) ? s:Variable.make("&" . a:rhs)
 \		 : s:throw("vital-unlocker Unlocker.Holder.Any.make() : No supported value.")
 endfunction
