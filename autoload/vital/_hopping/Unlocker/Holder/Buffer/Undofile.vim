@@ -11,13 +11,17 @@ endfunction
 
 
 function! s:obj.set(value)
-	silent! execute "rundo" a:value
+	if filereadable(a:value)
+		silent execute "rundo" a:value
+	else
+		throw "vital-unlocker Unlocker.Holder.Buffer.Undofile : No filereadable '" . a:value . "'."
+	endif
 	return self
 endfunction
 
 
 function! s:is_makeable(rhs)
-	return 0
+	return filereadable(a:rhs)
 endfunction
 
 
