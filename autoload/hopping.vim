@@ -22,7 +22,7 @@ function! hopping#load_vital()
 	let s:Highlight = s:V.import("Coaster.Highlight")
 	let s:Position = s:V.import("Coaster.Position")
 	let s:Commandline  = s:V.import("Over.Commandline")
-	let s:L = vital#of("vital").import("Data.List")
+	let s:L = s:V.import("Data.List")
 
 	return s:V
 endfunction
@@ -33,48 +33,6 @@ function! hopping#reload_vital()
 	let s:V = hopping#load_vital()
 endfunction
 call hopping#load_vital()
-
-
-let s:buffer = {}
-
-function! s:buffer.pack(pat, cursor)
-	let text = []
-	let self.lnums = {}
-	let pos  = s:Position.as(a:cursor)
-	for i in range(0, len(self.__text)-1)
-		let line = self.__text[i]
-		if line =~ a:pat
-			let text += [line]
-			let len = len(text)
-			let self.lnums[len] = i+1
-			if i+1 == pos[0]
-				let pos[0] = len
-			endif
-		endif
-	endfor
-	return [pos, text]
-endfunction
-
-
-function! s:buffer.unpack(cursor)
-	if !exists("self.lnums")
-		return [a:cursor, self.__text]
-	endif
-	let pos = s:Position.as(a:cursor)
-	if has_key(self.lnums, pos[0])
-		let pos[0] = self.lnums[pos[0]]
-	endif
-	unlet self.lnums
-	return [pos, self.__text]
-endfunction
-
-
-function! s:make_packer(text)
-	let result = deepcopy(s:buffer)
-	let result.__text = a:text
-	return result
-endfunction
-
 
 
 
@@ -125,7 +83,7 @@ function! s:text.unpack(cursor)
 endfunction
 
 
-function! s:make_packer(text)
+function! s:make_text(text)
 	let result = deepcopy(s:text)
 	let result.__text = a:text
 	let result.__text = map(a:text, '{ "line" : v:val, "lnum" : v:key+1 }')
@@ -135,7 +93,6 @@ function! s:make_packer(text)
 " 	endfor
 	return result
 endfunction
-
 
 
 
@@ -253,26 +210,29 @@ function! s:filter.on_enter(cmdline)
 	let self.search_reg = @/
 
 	let self.view = s:U.lock(s:H.make("Winview"))
-	let self.buffer_packer = s:make_packer(self.buffer.get())
+	let self.buffer_packer = s:make_text(self.buffer.get())
 	let self.is_stay = 0
 	let self.locker = s:U.lock(
 \		self.buffer,
 \		"&l:modified",
 \		"&l:modifiable",
-\		"&statusline",
 \		"&l:cursorline",
 \		"&l:number",
+\		"&listchars",
 \		s:H.make("Buffer.Undofile"),
 \	)
 	let &l:modifiable = 1
 	let &l:cursorline = 1
+
 	let self.number = &l:number
 	if self.number
 		call self.set_buffer_text(self.buffer_packer.__text)
 		call s:Highlight.highlight('linnr', "LineNR", '^\s\+\d\+ ')
 		let &l:number = 0
+		let &listchars = substitute(&listchars, 'trail:.,\?', "", "g")
 	endif
-	call self.update("")
+
+	call self.update(a:cmdline.getline())
 endfunction
 
 
