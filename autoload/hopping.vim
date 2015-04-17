@@ -156,6 +156,7 @@ function! s:filter.update_filter(pat)
 	endif
 
 	call self.highlight(a:pat, getpos("."))
+	let self.pos = getpos(".")
 endfunction
 
 
@@ -196,12 +197,11 @@ endfunction
 
 function! s:filter.on_execute_pre(cmdline)
 	let self.is_execute = 1
+	call self.locker.unlock()
 	if self.is_stay
-		let pos = s:Position.as(getpos("."))
-		let [pos, text] = self.buffer_packer.unpack(pos)
+		let [pos, text] = self.buffer_packer.unpack(s:Position.as(self.pos))
 		call cursor(pos[0], pos[1] - self.col_offset)
 	else
-		call self.locker.unlock()
 		let self.is_stay = 1
 	endif
 endfunction
@@ -240,6 +240,7 @@ endfunction
 function! s:filter.on_leave(cmdline)
 	call s:Highlight.clear_all()
 	call self.locker.unlock()
+
 	if self.is_stay == 0
 		call self.view.unlock()
 	endif
