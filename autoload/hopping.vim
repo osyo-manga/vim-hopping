@@ -22,10 +22,15 @@ function! hopping#load_vital()
 	let s:Highlight = s:V.import("Coaster.Highlight")
 	let s:Position = s:V.import("Coaster.Position")
 	let s:Commandline  = s:V.import("Over.Commandline")
-	let s:List = s:V.import("Data.List")
 
 	return s:V
 endfunction
+
+
+function! hopping#vital()
+	return s:V
+endfunction
+
 
 
 function! hopping#reload_vital()
@@ -36,80 +41,10 @@ call hopping#load_vital()
 
 
 
-let s:text = {}
-
-function! s:text.filter(pat)
-	if has_key(self, "__prev_pat") && stridx(a:pat, self.__prev_pat) == 0
-		let src = self.__prev_text
-	else
-		let src = self.__text
-	endif
-	let self.__prev_pat = a:pat
-	let self.__prev_text = filter(copy(src), "v:val.line =~ a:pat")
-	return self.__prev_text
-endfunction
-
-
-function! s:text.base_lnum(lnum)
-	if has_key(self, "__prev_text")
-		return get(self.__prev_text, a:lnum-1, { "lnum" : a:lnum }).lnum
-	endif
-	return a:lnum
-endfunction
-
-
-function! s:text.comp_lnum(a, b)
-	return a:a - a:b.lnum
-endfunction
-
-
-function! s:text.pack(pat, cursor)
-	let pos = a:cursor
-	let pos[0] = self.base_lnum(pos[0])
-	let text = self.filter(a:pat)
-	let pos[0] = s:List.binary_search(text, pos[0], self.comp_lnum, self) + 1
-	return [pos, text]
-endfunction
-
-
-function! s:text.unpack(cursor)
-	if !exists("self.__prev_text")
-		return [a:cursor, self.__text]
-	endif
-	let pos = a:cursor
-	let pos[0] = self.base_lnum(pos[0])
-	unlet self.__prev_text
-	return [pos, self.__text]
-endfunction
-
-
-function! s:make_text(text)
-	let result = deepcopy(s:text)
-	let result.__text = a:text
-	let result.__text = map(a:text, '{ "line" : v:val, "lnum" : v:key+1 }')
-	return result
-endfunction
-
-
-
 let s:filter = {
-\	"name" : "IncFilter"
+\	"name" : "IncFilter",
+\	"buffer" : hopping#buffer#make()
 \}
-
-
-function! s:filter.set_buffer_text(text)
-	let pos = getpos(".")
-	silent % delete _
-	if self.show_number
-		let format = "%". (self.col_offset - 1). "d %s"
-		call setline(1, map(copy(a:text), "printf(format, v:val.lnum, v:val.line)"))
-	else
-		call setline(1, map(copy(a:text), "v:val.line"))
-	endif
-	call setpos(".", pos)
-
-	let &modified = 0
-endfunction
 
 
 function! s:filter.highlight(pat, ...)
@@ -133,40 +68,21 @@ function! s:filter.update_filter(pat)
 		let @/ = a:pat
 	endif
 
-	let pos = s:Position.as(getpos("."))
-	let [pos, text] = self.buffer_packer.pack(a:pat, pos)
-
-	if empty(text)
-		let text = self.buffer_packer.__text
-	endif
-
-	" 連続して絞り込む場合はバッファを更新しない
-	if (has_key(self, "__prev_pat") && stridx(a:pat, self.__prev_pat) == 0)
-\	&& line(".") == len(text)
-	else
-		call self.set_buffer_text(text)
-	endif
-	let self.__prev_pat = a:pat
-
-	if a:pat == "" || self.buffer_lnum == len(text)
-		call self.view.relock()
-		call cursor(line("."), col(".") + self.col_offset)
-	else
-		call cursor(pos[0], pos[1])
+	if  self.buffer.draw_with_filtering(a:pat) == 0
+		call self.buffer.restore()
 	endif
 
 	call self.highlight(a:pat, getpos("."))
-	let self.pos = getpos(".")
 endfunction
 
 
 function! s:filter.on_char_pre(cmdline)
-	if a:cmdline.is_input("\<A-n>")
+	if a:cmdline.is_input("<Over>(hopping-next)")
 		silent! normal! n
 		call a:cmdline.setchar("")
 		let self.is_stay = 1
 	endif
-	if a:cmdline.is_input("\<A-p>")
+	if a:cmdline.is_input("<Over>(hopping-prev)")
 		silent! normal! N
 		call a:cmdline.setchar("")
 		let self.is_stay = 1
@@ -199,8 +115,8 @@ function! s:filter.on_execute_pre(cmdline)
 	let self.is_execute = 1
 	call self.locker.unlock()
 	if self.is_stay
-		let [pos, text] = self.buffer_packer.unpack(s:Position.as(self.pos))
-		call cursor(pos[0], pos[1] - self.col_offset)
+		let pos = self.buffer.get_unpack_pos()
+		call cursor(pos[0], pos[1])
 	else
 		let self.is_stay = 1
 	endif
@@ -208,11 +124,7 @@ endfunction
 
 
 function! s:filter.on_enter(cmdline)
-	let self.buffer_lnum = line("$")
-	let self.col_offset = max([strlen(self.buffer_lnum), &l:numberwidth])
-
 	let self.view = s:Rocker.lock(s:Holder.make("Winview"))
-	let self.buffer_packer = s:make_text(getline(1, "$"))
 	let self.is_stay = 0
 	let self.locker = s:Rocker.lock(
 \		"&l:modifiable",
@@ -224,15 +136,12 @@ function! s:filter.on_enter(cmdline)
 	let &l:modifiable = 1
 	let &l:cursorline = 1
 
-	let self.show_number = &l:number
-	if self.show_number
+	call self.buffer.start()
+	if self.buffer.show_number
 		call s:Highlight.highlight('linenr', "LineNR", '^\s\+\d\+ ')
 		let &l:number = 0
 		let &listchars = substitute(&listchars, 'trail:.,\?', "", "g")
-		call self.set_buffer_text(self.buffer_packer.__text)
-		call cursor(line("."), col(".") + self.col_offset)
 	endif
-
 	call self.update(a:cmdline.getline())
 endfunction
 
@@ -244,6 +153,13 @@ function! s:filter.on_leave(cmdline)
 	if self.is_stay == 0
 		call self.view.unlock()
 	endif
+endfunction
+
+
+function! s:make_incfilter(config)
+	let module = deepcopy(s:filter)
+	let module.config = a:config
+	return module
 endfunction
 
 
@@ -259,13 +175,19 @@ function! s:execute.execute(cmdline)
 endfunction
 
 call s:cmdline.connect("LockBuffer")
-call s:cmdline.connect(s:filter)
+
+
+let g:hopping#keymapping = get(g:, "hopping#keymapping", {})
+function! s:cmdline.keymapping(...)
+	return g:hopping#keymapping
+endfunction
 
 
 let g:hopping#prompt = get(g:, "hopping#prompt", "Input:> ")
 
 function! s:start(config)
 	call s:cmdline.set_prompt(a:config.prompt)
+	call s:cmdline.connect(s:make_incfilter(a:config))
 	let exit_code = s:cmdline.start(a:config.input)
 	return exit_code
 endfunction
@@ -274,10 +196,9 @@ endfunction
 function! hopping#start(...)
 	return s:start({
 \		"prompt" : g:hopping#prompt,
-\		"input"  : get(a:, 1, "")
+\		"input"  : get(a:, 1, ""),
 \	})
 endfunction
-
 
 
 let &cpo = s:save_cpo
