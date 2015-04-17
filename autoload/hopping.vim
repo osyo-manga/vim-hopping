@@ -175,6 +175,7 @@ function! s:execute.execute(cmdline)
 endfunction
 
 call s:cmdline.connect("LockBuffer")
+call s:cmdline.connect("Scroll")
 
 
 let g:hopping#keymapping = get(g:, "hopping#keymapping", {})
