@@ -5,14 +5,15 @@ set cpo&vim
 
 function! s:_vital_loaded(V)
 	let s:V = a:V
-	let s:Buffer = a:V.import("Coaster.Buffer")
+	let s:Window = a:V.import("Coaster.Window")
 	let s:Gift = a:V.import("Gift")
+	call s:_init()
 endfunction
 
 
 function! s:_vital_depends()
 	return [
-\		"Coaster.Buffer",
+\		"Coaster.Window",
 \		"Gift",
 \	]
 endfunction
@@ -150,6 +151,18 @@ function! s:base.disable_all()
 endfunction
 
 
+function! s:base.update(name)
+	call self.disable(a:name)
+	call self.enable(a:name)
+endfunction
+
+
+function! s:base.update_all()
+	call self.disable_all()
+	call self.enable_all()
+endfunction
+
+
 function! s:base.highlight(name, group, pattern, ...)
 	let priority = get(a:, 1, 10)
 	call self.add(a:name, a:group, a:pattern, priority)
@@ -169,13 +182,19 @@ function! s:base.clear_all()
 endfunction
 
 
+function! s:base.as_windo()
+	return self.windo
+endfunction
+
+
 function! s:make()
 	let result = deepcopy(s:base)
+	let result.windo = s:Window.as_windo(result)
 	return result
 endfunction
 
 
-let s:global = s:make()
+let s:global = deepcopy(s:base)
 let s:funcs =  keys(filter(copy(s:global), "type(v:val) == type(function('tr'))"))
 
 for s:name in s:funcs
@@ -187,6 +206,9 @@ endfor
 unlet s:name
 
 
+function! s:_init()
+	let s:global.windo = s:Window.as_windo(s:global)
+endfunction
 
 " function! s:matchadd(...)
 " 	return {

@@ -8,3 +8,6 @@ Unlocker.Holder
 Unlocker.Rocker
 Coaster.Position
 Over.Commandline.Modules.LockBuffer
+Over.Commandline.Modules.Digraphs
+Unlocker.Rocker.Undotree
+Unlocker.Holder.Buffer.Undofile

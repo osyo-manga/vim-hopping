@@ -123,10 +123,7 @@ function! s:filter.highlight(pat, ...)
 endfunction
 
 
-function! s:filter.update(pat)
-	call s:Highlight.clear("search")
-	nohlsearch
-	
+function! s:filter.update_filter(pat)
 	if a:pat != ""
 		try
 			call searchpos(a:pat, "c")
@@ -178,6 +175,13 @@ function! s:filter.on_char_pre(cmdline)
 		execute "normal" input(":normal ")
 		call a:cmdline.setchar("")
 	endif
+endfunction
+
+
+function! s:filter.update(input)
+	call s:Highlight.clear("search")
+	nohlsearch
+	call self.update_filter(a:input)
 endfunction
 
 
@@ -255,9 +259,6 @@ endfunction
 
 call s:cmdline.connect("LockBuffer")
 call s:cmdline.connect(s:filter)
-" NOTE: :digraphs is redraw, when start commandline.
-" https://github.com/osyo-manga/vital-over/issues/107
-call s:cmdline.disconnect("Digraphs")
 
 
 let g:hopping#prompt = get(g:, "hopping#prompt", "Input:> ")
