@@ -1,6 +1,5 @@
 # hopping.vim
 
-
 ## Introduction
 
 hopping.vim is incremental buffer line filtering Vim plugin.
@@ -23,6 +22,7 @@ git clone https://github.com/osyo-manga/vim-hopping ~/.vim/bundle/vim-hopping
 
 ## Screencapture
 
+![hopping](https://cloud.githubusercontent.com/assets/214488/7200019/f35e6ce2-e533-11e4-8e12-061cb0c649b3.gif)
 
 ## Usage
 
