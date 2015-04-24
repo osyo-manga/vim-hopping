@@ -12,7 +12,6 @@ function! hopping#load_vital()
 	if g:hopping#debug_vital
 		let s:V = vital#of("vital")
 	else
-
 		let s:V = vital#of("hopping")
 	endif
 	call s:V.unload()
@@ -22,6 +21,8 @@ function! hopping#load_vital()
 	let s:Highlight = s:V.import("Coaster.Highlight")
 	let s:Position = s:V.import("Coaster.Position")
 	let s:Commandline  = s:V.import("Over.Commandline")
+" 	let s:Migemo  = s:V.import("Migemo")
+	let s:Migemo  = s:V.import("Migemo.Interactive")
 
 	return s:V
 endfunction
@@ -98,13 +99,18 @@ endfunction
 function! s:filter.update(input)
 	call s:Highlight.clear("search")
 	nohlsearch
+" 	if len(a:input) >= 4
+" 		call self.update_filter(s:Migemo.generate_regexp(a:input))
+" 	else
+" 		call self.update_filter(a:input)
+" 	endif
 	call self.update_filter(a:input)
 endfunction
 
 
 function! s:filter.on_char(cmdline)
 	let input = a:cmdline.getline()
-	if !a:cmdline._is_exit()
+	if !a:cmdline.__is_exit()
 " 	if a:cmdline.char() != ""
 		call self.update(input)
 	endif
@@ -150,7 +156,7 @@ function! s:filter.on_leave(cmdline)
 	call s:Highlight.clear_all()
 	call self.locker.unlock()
 
-	if self.is_stay == 0
+	if self.is_stay == 0 || a:cmdline.exit_code()
 		call self.view.unlock()
 	endif
 endfunction
