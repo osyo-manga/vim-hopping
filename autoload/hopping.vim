@@ -98,7 +98,6 @@ endfunction
 
 function! s:filter.update(input)
 	call s:Highlight.clear("search")
-	nohlsearch
 " 	if len(a:input) >= 4
 " 		call self.update_filter(s:Migemo.generate_regexp(a:input))
 " 	else
@@ -137,8 +136,10 @@ function! s:filter.on_enter(cmdline)
 \		"&l:cursorline",
 \		"&l:number",
 \		"&listchars",
+\		"&hlsearch",
 \		"@/",
 \	)
+	nohlsearch
 	let &l:modifiable = 1
 	let &l:cursorline = 1
 
