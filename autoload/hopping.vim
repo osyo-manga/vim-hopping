@@ -60,22 +60,27 @@ endfunction
 
 
 function! s:filter.update_filter(pat)
-	let pat = a:pat
-	if pat != ""
+	let filtering_pat = a:pat
+	let search_pat = a:pat
+	if self.buffer.show_number && a:pat[0] ==# '^'
+		let search_pat = '^\s\+\d\+ \zs' . a:pat[1:]
+	endif
+
+	if filtering_pat != ""
 		try
-			call searchpos(pat, "c")
+			call searchpos(search_pat, "c")
 		catch /^Vim\%((\a\+)\)\=:E54/
 			return
 		endtry
-		let @/ = pat
-		set hlsearch
 	endif
 
-	if  self.buffer.draw_with_filtering(pat) == 0
+	if  self.buffer.draw_with_filtering(filtering_pat) == 0
 		call self.buffer.restore()
 	endif
 
-	call self.highlight(pat, getpos("."))
+	let @/ = search_pat
+	set hlsearch
+	call self.highlight(search_pat, getpos("."))
 endfunction
 
 
