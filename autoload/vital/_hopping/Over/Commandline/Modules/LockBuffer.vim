@@ -36,6 +36,7 @@ endfunction
 
 function! s:module.on_execute_pre(...)
 	call self.__locker.unlock()
+	echom "lockbuffer"
 endfunction
 
 

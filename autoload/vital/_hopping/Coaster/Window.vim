@@ -28,7 +28,7 @@ function! s:windo(func, args, ...)
 	if pre_winnr == winnr()
 		return
 	endif
-	execute pre_winnr . "wincmd w"
+	noautocmd execute pre_winnr . "wincmd w"
 endfunction
 
 
