@@ -60,20 +60,22 @@ endfunction
 
 
 function! s:filter.update_filter(pat)
-	if a:pat != ""
+	let pat = a:pat
+	if pat != ""
 		try
-			call searchpos(a:pat, "c")
+			call searchpos(pat, "c")
 		catch /^Vim\%((\a\+)\)\=:E54/
 			return
 		endtry
-		let @/ = a:pat
+		let @/ = pat
+		set hlsearch
 	endif
 
-	if  self.buffer.draw_with_filtering(a:pat) == 0
+	if  self.buffer.draw_with_filtering(pat) == 0
 		call self.buffer.restore()
 	endif
 
-	call self.highlight(a:pat, getpos("."))
+	call self.highlight(pat, getpos("."))
 endfunction
 
 
