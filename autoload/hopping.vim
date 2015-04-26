@@ -3,6 +3,7 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 let g:hopping#debug_vital = get(g:, "hopping#debug_vital", 0)
+let g:hopping#enable_migemo = get(g:, "hopping#enable_migemo", 0)
 
 
 function! hopping#load_vital()
@@ -84,6 +85,30 @@ function! s:filter.update_filter(pat)
 endfunction
 
 
+function! s:filter.update(input)
+	call s:Highlight.clear("search")
+" 	if len(a:input) >= 4
+" 		call self.update_filter(s:Migemo.generate_regexp(a:input))
+" 	else
+" 		call self.update_filter(a:input)
+" 	endif
+	if g:hopping#enable_migemo
+		call self.update_filter(s:Migemo.generate_regexp(a:input))
+	else
+		call self.update_filter(a:input)
+	endif
+endfunction
+
+
+function! s:filter.on_char(cmdline)
+	let input = a:cmdline.getline()
+	if !a:cmdline.__is_exit()
+" 	if a:cmdline.char() != ""
+		call self.update(input)
+	endif
+endfunction
+
+
 function! s:filter.on_char_pre(cmdline)
 	if a:cmdline.is_input("<Over>(hopping-next)")
 		silent! normal! n
@@ -103,22 +128,40 @@ function! s:filter.on_char_pre(cmdline)
 endfunction
 
 
-function! s:filter.update(input)
-	call s:Highlight.clear("search")
-" 	if len(a:input) >= 4
-" 		call self.update_filter(s:Migemo.generate_regexp(a:input))
-" 	else
-" 		call self.update_filter(a:input)
-" 	endif
-	call self.update_filter(a:input)
+function! s:filter.on_char_pre(cmdline)
+	if a:cmdline.is_input("<Over>(hopping-next)")
+		silent! normal! n
+		call a:cmdline.setchar("")
+		let self.is_stay = 1
+	endif
+	if a:cmdline.is_input("<Over>(hopping-prev)")
+		silent! normal! N
+		call a:cmdline.setchar("")
+		let self.is_stay = 1
+	endif
+	if a:cmdline.is_input("\<A-r>")
+		redraw
+		execute "normal" input(":normal ")
+		call a:cmdline.setchar("")
+	endif
 endfunction
 
 
-function! s:filter.on_char(cmdline)
-	let input = a:cmdline.getline()
-	if !a:cmdline.__is_exit()
-" 	if a:cmdline.char() != ""
-		call self.update(input)
+function! s:filter.on_char_pre(cmdline)
+	if a:cmdline.is_input("<Over>(hopping-next)")
+		silent! normal! n
+		call a:cmdline.setchar("")
+		let self.is_stay = 1
+	endif
+	if a:cmdline.is_input("<Over>(hopping-prev)")
+		silent! normal! N
+		call a:cmdline.setchar("")
+		let self.is_stay = 1
+	endif
+	if a:cmdline.is_input("\<A-r>")
+		redraw
+		execute "normal" input(":normal ")
+		call a:cmdline.setchar("")
 	endif
 endfunction
 
