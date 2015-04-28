@@ -125,7 +125,7 @@ function! s:buffer.set_buffer_text(text)
 	silent % delete _
 	if self.show_number
 		let format = "%". (self.col_offset - 1). "d %s"
-		call setline(1, map(copy(a:text), "printf(format, v:val.lnum, v:val.line)"))
+		call setline(1, map(copy(a:text), "printf(format, v:val.lnum, v:val.line == '' ? ' ' : v:val.line)"))
 	else
 		call setline(1, map(copy(a:text), "v:val.line"))
 	endif

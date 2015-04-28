@@ -42,14 +42,10 @@ endfunction
 call hopping#load_vital()
 
 
+function! s:on_search_pattern(pat, ...)
+	let @/ = a:pat
+	set hlsearch
 
-let s:filter = {
-\	"name" : "IncFilter",
-\	"buffer" : hopping#buffer#make()
-\}
-
-
-function! s:filter.highlight(pat, ...)
 	let pos = get(a:, 1, getpos("."))
 	if a:pat == ""
 		call s:Highlight.clear("search")
@@ -58,6 +54,12 @@ function! s:filter.highlight(pat, ...)
 	endif
 	call s:Highlight.highlight("cursor", "Cursor", s:Position.as_pattern(pos))
 endfunction
+
+
+let s:filter = {
+\	"name" : "IncFilter",
+\	"buffer" : hopping#buffer#make()
+\}
 
 
 function! s:filter.update_filter(pat)
@@ -84,9 +86,7 @@ function! s:filter.update_filter(pat)
 		call self.buffer.restore()
 	endif
 
-	let @/ = search_pat
-	set hlsearch
-	call self.highlight(search_pat, getpos("."))
+	call s:on_search_pattern(search_pat, getpos("."))
 endfunction
 
 
@@ -203,6 +203,7 @@ function! s:filter.on_enter(cmdline)
 		call s:Highlight.highlight('linenr', "LineNR", '^\s\+\d\+ ')
 		let &l:number = 0
 		let &listchars = substitute(&listchars, 'trail:.,\?', "", "g")
+		let &listchars = substitute(&listchars, 'eol:.,\?', "", "g")
 	endif
 	call self.update(a:cmdline.getline())
 endfunction
