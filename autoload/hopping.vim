@@ -63,8 +63,13 @@ endfunction
 function! s:filter.update_filter(pat)
 	let filtering_pat = a:pat
 	let search_pat = a:pat
-	if self.buffer.show_number && a:pat[0] ==# '^'
-		let search_pat = '^\s\+\d\+ \zs' . a:pat[1:]
+
+	if self.buffer.show_number && a:pat != ""
+		if a:pat[0] ==# "^"
+			let search_pat = '^\s\+\d\+ \zs' . a:pat[1:]
+		else
+			let search_pat = '\%>' . self.buffer.col_offset . 'v' . a:pat
+		endif
 	endif
 
 	if filtering_pat != ""
