@@ -249,7 +249,7 @@ function! s:filter.on_enter(cmdline)
 
 	let string  = s:hl_mark_center . '\zs\_.\{-}\ze' . s:hl_mark_end
 " 	call s:Highlight.highlight("SubString", g:over#command_line#substitute#highlight_string, string, 100)
-	call s:Highlight.highlight("SubString", "ErrorMsg", string, 100)
+	call s:Highlight.highlight("SubString", "Error", string, 100)
 
 	let self.view = s:Rocker.lock(s:Holder.make("Winview"))
 	let self.is_stay = 0
