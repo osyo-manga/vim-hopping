@@ -26,7 +26,6 @@ function! s:flatten(list)
 endfunction
 
 
-
 function! s:tabpagewinnr_list()
 	return s:flatten(map(range(1, tabpagenr("$")), "map(range(1, tabpagewinnr(v:val, '$')), '['.v:val.', v:val]')"))
 endfunction
@@ -53,7 +52,7 @@ endfunction
 function! s:uniq_nr(...)
 	let winnr = get(a:, 1, winnr())
 	let tabnr = get(a:, 2, tabpagenr())
-	let uniq_nr = gettabwinvar(tabnr, winnr, s:prefix . "_gift_uniq_winnr", -1)
+	let uniq_nr = get(gettabwinvar(tabnr, winnr, ""), s:prefix . "_gift_uniq_winnr", -1)
 	if uniq_nr == -1
 		let uniq_nr = s:numbering(winnr, tabnr)
 	endif
@@ -84,7 +83,7 @@ endfunction
 function! s:getvar(nr, varname, ...)
 	let def = get(a:, 1, "")
 	let [tabnr, winnr] = s:tabpagewinnr(a:nr)
-	return gettabwinvar(tabnr, winnr, a:varname, def)
+	return get(gettabwinvar(tabnr, winnr, ""), a:varname, def)
 endfunction
 
 

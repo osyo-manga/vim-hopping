@@ -13,7 +13,9 @@ endfunction
 
 function! s:_vital_depends()
 	return [
-\		"Over.String",
+\		"Unlocker.Rocker",
+\		"Unlocker.Rocker.Undotree",
+\		"Unlocker.Holder",
 \	]
 endfunction
 

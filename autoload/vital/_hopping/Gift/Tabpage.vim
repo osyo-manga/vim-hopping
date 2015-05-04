@@ -26,7 +26,7 @@ endfunction
 
 function! s:uniq_nr(...)
 	let tabnr = get(a:, 1, tabpagenr())
-	let uniq_nr = gettabvar(tabnr, s:prefix . "_gift_uniq_tabpagenr", -1)
+	let uniq_nr = get(gettabvar(tabnr, ""), s:prefix . "_gift_uniq_tabpagenr", -1)
 	if uniq_nr == -1
 		let uniq_nr = s:numbering(tabnr)
 	endif
