@@ -304,13 +304,12 @@ let s:cmdline = s:Commandline.make_standard("Input:> ")
 
 function! s:cmdline.__execute__(cmd)
 	let substitute = s:parse_substitute("%s/" . a:cmd)
-	Debug substitute
 	if substitute[2] != ""
 		execute "%s/" . a:cmd
 		return
 	endif
 	if self.get_module("IncFilter").is_stay == 0
-		call search(a:cmd)
+		call search(a:cmd, "c")
 		call histadd("/", a:cmd)
 	endif
 endfunction
