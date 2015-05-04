@@ -22,7 +22,6 @@ function! hopping#load_vital()
 	let s:Highlight = s:V.import("Coaster.Highlight")
 	let s:Position = s:V.import("Coaster.Position")
 	let s:Commandline  = s:V.import("Over.Commandline")
-" 	let s:Migemo  = s:V.import("Migemo")
 	let s:Migemo  = s:V.import("Migemo.Interactive")
 
 	return s:V
@@ -92,11 +91,6 @@ endfunction
 
 function! s:filter.update(input)
 	call s:Highlight.clear("search")
-" 	if len(a:input) >= 4
-" 		call self.update_filter(s:Migemo.generate_regexp(a:input))
-" 	else
-" 		call self.update_filter(a:input)
-" 	endif
 	if g:hopping#enable_migemo
 		call self.update_filter(s:Migemo.generate_regexp(a:input))
 	else
@@ -107,8 +101,7 @@ endfunction
 
 function! s:filter.on_char(cmdline)
 	let input = a:cmdline.getline()
-	if !a:cmdline.__is_exit()
-" 	if a:cmdline.char() != ""
+	if !a:cmdline.is_exit()
 		call self.update(input)
 	endif
 endfunction
@@ -205,6 +198,7 @@ function! s:filter.on_enter(cmdline)
 		let &listchars = substitute(&listchars, 'trail:.,\?', "", "g")
 		let &listchars = substitute(&listchars, 'eol.,\?', "", "g")
 	endif
+
 	call self.update(a:cmdline.getline())
 endfunction
 
