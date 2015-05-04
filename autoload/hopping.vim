@@ -158,10 +158,10 @@ function! s:filter.update_filter(pat)
 endfunction
 
 
-let s:hl_mark_begin = '`os`'
 let s:hl_mark_begin = ''
-let s:hl_mark_center = '`mc`'
-let s:hl_mark_end   = '`oe`'
+
+let s:hl_mark_center = ''
+let s:hl_mark_end   = ''
 
 
 function! s:filter.substitute_preview(range, pattern, string, flags)
@@ -332,10 +332,11 @@ function! s:start(config)
 endfunction
 
 
-function! hopping#start(...)
+function! hopping#start(...) range
 	return s:start({
 \		"prompt" : g:hopping#prompt,
 \		"input"  : get(a:, 1, ""),
+\		"range"  : [a:firstline, a:lastline]
 \	})
 endfunction
 
