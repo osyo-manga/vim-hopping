@@ -6,6 +6,69 @@ let g:hopping#debug_vital = get(g:, "hopping#debug_vital", 0)
 let g:hopping#enable_migemo = get(g:, "hopping#enable_migemo", 0)
 
 
+" http://d.hatena.ne.jp/thinca/20131104/1383498883
+" {range}s/{pattern}/{string}/{flags}
+function! s:parse_substitute(word)
+	let very_magic   = '\v'
+	let range        = '(.{-})'
+	let command      = 's%[ubstitute]'
+	let first_slash  = '([\x00-\xff]&[^\\"|[:alnum:][:blank:]])'
+	let pattern      = '(%(\\.|.){-})'
+	let second_slash = '\2'
+	let string       = '(%(\\.|.){-})'
+	let flags        = '%(\2([&cegiInp#lr]*))?'
+	let parse_pattern
+\		= very_magic
+\		. '^:*'
+\		. range
+\		. command
+\		. first_slash
+\		. pattern
+\		. '%('
+\		. second_slash
+\		. string
+\		. flags
+\		. ')?$'
+	let result = matchlist(a:word, parse_pattern)[1:5]
+	if type(result) == type(0) || empty(result)
+		return []
+	endif
+	unlet result[1]
+	return result
+endfunction
+
+function! s:silent_undo()
+	let pos = getpos(".")
+	redir => _
+	silent undo
+	redir END
+	call setpos(".", pos)
+endfunction
+
+
+function! s:silent_substitute(range, pattern, string, flags)
+	try
+		let flags = substitute(a:flags, 'c', '', "g")
+		let old_pos = getpos(".")
+		let old_search = @/
+		let check = b:changedtick
+		silent execute printf('%ss/%s/%s/%s', a:range, a:pattern, a:string, flags)
+		call histdel("search", -1)
+" 		let &l:modified = s:old_modified
+	catch /\v^Vim%(\(\a+\))=:(E121)|(E117)|(E110)|(E112)|(E113)|(E731)|(E475)|(E15)/
+		if check != b:changedtick
+			call s:silent_undo()
+		endif
+		return 1
+	catch
+	finally
+		call setpos(".", old_pos)
+		let @/ = old_search
+	endtry
+	return check != b:changedtick
+endfunction
+
+
 function! hopping#load_vital()
 	if exists("s:V")
 		return s:V
@@ -61,17 +124,23 @@ let s:filter = {
 \}
 
 
-function! s:filter.update_filter(pat)
-	let filtering_pat = a:pat
-	let search_pat = a:pat
-
-	if self.buffer.show_number && a:pat != ""
-		if a:pat[0] ==# "^"
-			let search_pat = '^\s\+\d\+ \zs' . a:pat[1:]
+function! s:filter.convert_search_pattern(input)
+	let pat = a:input
+	let search_pat = pat
+	if self.buffer.show_number && pat != ""
+		if pat[0] ==# "^"
+			let search_pat = '^\s*\d\+ \zs' . pat[1:]
 		else
-			let search_pat = '\%>' . self.buffer.col_offset . 'v' . a:pat
+			let search_pat = '\%>' . self.buffer.col_offset . 'v' . pat
 		endif
 	endif
+	return search_pat
+endfunction
+
+
+function! s:filter.update_filter(pat)
+	let filtering_pat = a:pat
+	let search_pat = self.convert_search_pattern(a:pat)
 
 	if filtering_pat != ""
 		try
@@ -89,12 +158,46 @@ function! s:filter.update_filter(pat)
 endfunction
 
 
+let s:hl_mark_begin = '`os`'
+let s:hl_mark_begin = ''
+let s:hl_mark_center = '`mc`'
+let s:hl_mark_end   = '`oe`'
+
+
+function! s:filter.substitute_preview(range, pattern, string, flags)
+	let pattern = self.convert_search_pattern(a:pattern)
+	let string = a:string
+	if string =~ '^\\=.\+'
+		" \="`os`" . submatch(0) . "`om`" . (submatch(0)) . "`oe`"
+		let hl_submatch = printf('\\="%s" . submatch(0) . "%s" . (', s:hl_mark_begin, s:hl_mark_center)
+		let string = substitute(string, '^\\=\ze.\+', hl_submatch, "") . ') . "' . s:hl_mark_end . '"'
+	else
+		let string = s:hl_mark_begin . '\0' . s:hl_mark_center . string . s:hl_mark_end
+	endif
+	return s:silent_substitute(a:range, pattern, string, a:flags)
+endfunction
+
+
 function! s:filter.update(input)
 	call s:Highlight.clear("search")
+
+	let substitute = s:parse_substitute("%s/" . a:input)
+	let input = substitute[1]
+
 	if g:hopping#enable_migemo
-		call self.update_filter(s:Migemo.generate_regexp(a:input))
+		call self.update_filter(s:Migemo.generate_regexp(input))
 	else
-		call self.update_filter(a:input)
+		call self.update_filter(input)
+	endif
+	
+	if get(self, "_redraw")
+		call self.buffer.draw(1)
+	endif
+	let self._redraw = 0
+
+	if substitute[2] != ""
+		let self._redraw = call(self.substitute_preview, substitute, self)
+		setlocal conceallevel=2
 	endif
 endfunction
 
@@ -103,44 +206,6 @@ function! s:filter.on_char(cmdline)
 	let input = a:cmdline.getline()
 	if !a:cmdline.is_exit()
 		call self.update(input)
-	endif
-endfunction
-
-
-function! s:filter.on_char_pre(cmdline)
-	if a:cmdline.is_input("<Over>(hopping-next)")
-		silent! normal! n
-		call a:cmdline.setchar("")
-		let self.is_stay = 1
-	endif
-	if a:cmdline.is_input("<Over>(hopping-prev)")
-		silent! normal! N
-		call a:cmdline.setchar("")
-		let self.is_stay = 1
-	endif
-	if a:cmdline.is_input("\<A-r>")
-		redraw
-		execute "normal" input(":normal ")
-		call a:cmdline.setchar("")
-	endif
-endfunction
-
-
-function! s:filter.on_char_pre(cmdline)
-	if a:cmdline.is_input("<Over>(hopping-next)")
-		silent! normal! n
-		call a:cmdline.setchar("")
-		let self.is_stay = 1
-	endif
-	if a:cmdline.is_input("<Over>(hopping-prev)")
-		silent! normal! N
-		call a:cmdline.setchar("")
-		let self.is_stay = 1
-	endif
-	if a:cmdline.is_input("\<A-r>")
-		redraw
-		execute "normal" input(":normal ")
-		call a:cmdline.setchar("")
 	endif
 endfunction
 
@@ -177,6 +242,15 @@ endfunction
 
 
 function! s:filter.on_enter(cmdline)
+	let hl_f = "syntax match %s '%s' conceal containedin=.*"
+" 	execute printf(hl_f, "HoppingSubstituteHiddenBegin", s:hl_mark_begin)
+	execute printf(hl_f, "HoppingSubstituteHiddenCenter", s:hl_mark_center)
+	execute printf(hl_f, "HoppingSubstituteHiddenEnd", s:hl_mark_end)
+
+	let string  = s:hl_mark_center . '\zs\_.\{-}\ze' . s:hl_mark_end
+" 	call s:Highlight.highlight("SubString", g:over#command_line#substitute#highlight_string, string, 100)
+	call s:Highlight.highlight("SubString", "ErrorMsg", string, 100)
+
 	let self.view = s:Rocker.lock(s:Holder.make("Winview"))
 	let self.is_stay = 0
 	let self.locker = s:Rocker.lock(
@@ -185,6 +259,7 @@ function! s:filter.on_enter(cmdline)
 \		"&l:number",
 \		"&listchars",
 \		"&hlsearch",
+\		"&l:conceallevel",
 \		"@/",
 \	)
 	nohlsearch
@@ -193,7 +268,7 @@ function! s:filter.on_enter(cmdline)
 
 	call self.buffer.start()
 	if self.buffer.show_number
-		call s:Highlight.highlight('linenr', "LineNR", '^\s\+\d\+ ')
+		call s:Highlight.highlight('linenr', "LineNR", '^\s*\d\+ ')
 		let &l:number = 0
 		let &listchars = substitute(&listchars, 'trail:.,\?', "", "g")
 		let &listchars = substitute(&listchars, 'eol.,\?', "", "g")
@@ -222,12 +297,14 @@ endfunction
 
 let s:cmdline = s:Commandline.make_standard("Input:> ")
 
-let s:execute = s:cmdline.get_module("Execute")
-function! s:execute.execute(cmdline)
-	if a:cmdline.get_module("IncFilter").is_stay == 0
-		call a:cmdline.execute(":normal! /" . a:cmdline.getline() . "\<CR>")
-	else
-		call a:cmdline.execute("")
+function! s:cmdline.__execute__(cmd)
+	let substitute = s:parse_substitute("%s/" . a:cmd)
+	if substitute[2] != ""
+		execute "%s/" . a:cmd
+		return
+	endif
+	if self.get_module("IncFilter").is_stay == 0
+		execute ":normal! /" . a:cmd . "\<CR>"
 	endif
 endfunction
 
