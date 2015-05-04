@@ -198,6 +198,7 @@ function! s:filter.update(input)
 	if substitute[2] != ""
 		let self._redraw = call(self.substitute_preview, substitute, self)
 		setlocal conceallevel=2
+		setlocal concealcursor=n
 	endif
 endfunction
 
@@ -236,7 +237,7 @@ function! s:filter.on_execute_pre(cmdline)
 		let pos = self.buffer.get_unpack_pos()
 		call cursor(pos[0], pos[1])
 	else
-		let self.is_stay = 1
+		call self.view.unlock()
 	endif
 endfunction
 
@@ -260,6 +261,7 @@ function! s:filter.on_enter(cmdline)
 \		"&listchars",
 \		"&hlsearch",
 \		"&l:conceallevel",
+\		"&l:concealcursor",
 \		"@/",
 \	)
 	nohlsearch
@@ -282,7 +284,10 @@ function! s:filter.on_leave(cmdline)
 	call s:Highlight.clear_all()
 	call self.locker.unlock()
 
-	if self.is_stay == 0 || a:cmdline.exit_code()
+" 	if self.is_stay == 0 || a:cmdline.exit_code()
+" 		call self.view.unlock()
+" 	endif
+	if a:cmdline.exit_code() != 0
 		call self.view.unlock()
 	endif
 endfunction
@@ -299,15 +304,18 @@ let s:cmdline = s:Commandline.make_standard("Input:> ")
 
 function! s:cmdline.__execute__(cmd)
 	let substitute = s:parse_substitute("%s/" . a:cmd)
+	Debug substitute
 	if substitute[2] != ""
 		execute "%s/" . a:cmd
 		return
 	endif
 	if self.get_module("IncFilter").is_stay == 0
-		execute ":normal! /" . a:cmd . "\<CR>"
+		call search(a:cmd)
+		call histadd("/", a:cmd)
 	endif
 endfunction
 
+call s:cmdline.disconnect("HistAdd")
 call s:cmdline.connect("LockBuffer")
 call s:cmdline.connect("Scroll")
 
@@ -337,4 +345,3 @@ endfunction
 
 
 let &cpo = s:save_cpo
-unlet s:save_cpo
