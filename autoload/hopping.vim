@@ -284,9 +284,6 @@ function! s:filter.on_leave(cmdline)
 	call s:Highlight.clear_all()
 	call self.locker.unlock()
 
-" 	if self.is_stay == 0 || a:cmdline.exit_code()
-" 		call self.view.unlock()
-" 	endif
 	if a:cmdline.exit_code() != 0
 		call self.view.unlock()
 	endif
