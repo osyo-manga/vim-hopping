@@ -15,7 +15,11 @@ function! s:text.filter(pat)
 		let src = self.__text
 	endif
 	let self.__prev_pat = a:pat
-	let self.__prev_text = filter(copy(src), "v:val.line =~ a:pat")
+	let pat = a:pat
+	if &smartcase
+		let pat =  '\C' . pat
+	endif
+	let self.__prev_text = filter(copy(src), "v:val.line =~ pat")
 	return self.__prev_text
 endfunction
 
@@ -160,6 +164,20 @@ function! s:buffer.draw_with_filtering(pat)
 	endif
 	let self.__prev_pat = a:pat
 	return text_size
+endfunction
+
+
+function! s:buffer.convert_search_pattern(pat)
+	let pat = a:pat
+	let search_pat = pat
+	if self.show_number && pat != ""
+		if pat[0] ==# "^"
+			let search_pat = '^\s*\d\+ \zs' . pat[1:]
+		else
+			let search_pat = '\%>' . self.col_offset . 'v' . pat
+		endif
+	endif
+	return search_pat
 endfunction
 
 
