@@ -124,23 +124,9 @@ let s:filter = {
 \}
 
 
-function! s:filter.convert_search_pattern(input)
-	let pat = a:input
-	let search_pat = pat
-	if self.buffer.show_number && pat != ""
-		if pat[0] ==# "^"
-			let search_pat = '^\s*\d\+ \zs' . pat[1:]
-		else
-			let search_pat = '\%>' . self.buffer.col_offset . 'v' . pat
-		endif
-	endif
-	return search_pat
-endfunction
-
-
 function! s:filter.update_filter(pat)
 	let filtering_pat = a:pat
-	let search_pat = self.convert_search_pattern(a:pat)
+	let search_pat = self.buffer.convert_search_pattern(a:pat)
 
 	if filtering_pat != ""
 		try
@@ -165,7 +151,7 @@ let s:hl_mark_end   = ''
 
 
 function! s:filter.substitute_preview(range, pattern, string, flags)
-	let pattern = self.convert_search_pattern(a:pattern)
+	let pattern = self.buffer.convert_search_pattern(a:pattern)
 	let string = a:string
 	if string =~ '^\\=.\+'
 		" \="`os`" . submatch(0) . "`om`" . (submatch(0)) . "`oe`"
@@ -183,17 +169,17 @@ function! s:filter.update(input)
 
 	let substitute = s:parse_substitute("%s/" . a:input)
 	let input = substitute[1]
+	
+	if get(self, "_redraw", 0)
+		call self.buffer.draw(1)
+	endif
+	let self._redraw = 0
 
-	if g:hopping#enable_migemo
+	if self._config.migemo
 		call self.update_filter(s:Migemo.generate_regexp(input))
 	else
 		call self.update_filter(input)
 	endif
-	
-	if get(self, "_redraw")
-		call self.buffer.draw(1)
-	endif
-	let self._redraw = 0
 
 	if substitute[2] != ""
 		let self._redraw = call(self.substitute_preview, substitute, self)
@@ -251,6 +237,8 @@ function! s:filter.on_enter(cmdline)
 	let string  = s:hl_mark_center . '\zs\_.\{-}\ze' . s:hl_mark_end
 " 	call s:Highlight.highlight("SubString", g:over#command_line#substitute#highlight_string, string, 100)
 	call s:Highlight.highlight("SubString", "Error", string, 100)
+
+	let self._config = a:cmdline._config
 
 	let self.view = s:Rocker.lock(s:Holder.make("Winview"))
 	let self.is_stay = 0
@@ -324,7 +312,19 @@ endfunction
 
 let g:hopping#prompt = get(g:, "hopping#prompt", "Input:> ")
 
+function! s:default_config(...)
+	let base = get(a:, 1, {})
+	return extend({
+\		"prompt" : g:hopping#prompt,
+\		"migemo" : g:hopping#enable_migemo,
+\		"input"  : "",
+\		"range"  : [1, line("$")],
+\	}, base)
+endfunction
+
+
 function! s:start(config)
+	let s:cmdline._config = a:config
 	call s:cmdline.set_prompt(a:config.prompt)
 	call s:cmdline.connect(s:make_incfilter(a:config))
 	let exit_code = s:cmdline.start(a:config.input)
@@ -332,12 +332,11 @@ function! s:start(config)
 endfunction
 
 
-function! hopping#start(...) range
-	return s:start({
-\		"prompt" : g:hopping#prompt,
-\		"input"  : get(a:, 1, ""),
-\		"range"  : [a:firstline, a:lastline]
-\	})
+function! hopping#start(...)
+	let config = get(a:, 1, {})
+	return s:start(s:default_config({
+\		"input" : get(a:, 1, ""),
+\	}))
 endfunction
 
 
