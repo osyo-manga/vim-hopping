@@ -1,3 +1,5 @@
+It is under development.
+
 # hopping.vim
 
 ## Introduction
