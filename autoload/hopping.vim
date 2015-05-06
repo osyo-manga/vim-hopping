@@ -278,15 +278,6 @@ function! s:filter.on_leave(cmdline)
 endfunction
 
 
-	let substitute = s:parse_substitute("%s/" . a:cmd)
-	if substitute[2] != ""
-		execute printf("%d,%ds/%s", self._config.firstline, self._config.lastline, a:cmd)
-		return
-	endif
-	if self.get_module("IncFilter").is_stay == 0
-		call search(a:cmd, "c")
-		call histadd("/", a:cmd)
-	endif
 function! s:make_incfilter(config)
 	let module = deepcopy(s:filter)
 	let module.config = a:config
