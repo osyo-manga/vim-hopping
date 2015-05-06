@@ -256,7 +256,7 @@ function! s:filter.on_enter(cmdline)
 	let &l:modifiable = 1
 	let &l:cursorline = 1
 
-	call self.buffer.start()
+	call self.buffer.start(self._config.firstline, self._config.lastline)
 	if self.buffer.show_number
 		call s:Highlight.highlight('linenr', "LineNR", '^\s*\d\+ ')
 		let &l:number = 0
@@ -278,6 +278,15 @@ function! s:filter.on_leave(cmdline)
 endfunction
 
 
+	let substitute = s:parse_substitute("%s/" . a:cmd)
+	if substitute[2] != ""
+		execute printf("%d,%ds/%s", self._config.firstline, self._config.lastline, a:cmd)
+		return
+	endif
+	if self.get_module("IncFilter").is_stay == 0
+		call search(a:cmd, "c")
+		call histadd("/", a:cmd)
+	endif
 function! s:make_incfilter(config)
 	let module = deepcopy(s:filter)
 	let module.config = a:config
@@ -290,7 +299,7 @@ let s:cmdline = s:Commandline.make_standard("Input:> ")
 function! s:cmdline.__execute__(cmd)
 	let substitute = s:parse_substitute("%s/" . a:cmd)
 	if substitute[2] != ""
-		execute "%s/" . a:cmd
+		execute printf("%d,%ds/%s", self._config.firstline, self._config.lastline, a:cmd)
 		return
 	endif
 	if self.get_module("IncFilter").is_stay == 0
@@ -318,7 +327,8 @@ function! s:default_config(...)
 \		"prompt" : g:hopping#prompt,
 \		"migemo" : g:hopping#enable_migemo,
 \		"input"  : "",
-\		"range"  : [1, line("$")],
+\		"firstline" : 1,
+\		"lastline"  : line("$"),
 \	}, base)
 endfunction
 
@@ -334,9 +344,7 @@ endfunction
 
 function! hopping#start(...)
 	let config = get(a:, 1, {})
-	return s:start(s:default_config({
-\		"input" : get(a:, 1, ""),
-\	}))
+	return s:start(s:default_config(config))
 endfunction
 
 

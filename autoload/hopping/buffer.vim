@@ -66,10 +66,11 @@ endfunction
 
 let s:buffer = {}
 
-function! s:buffer.__init()
-	let self.packer = s:make_text(getline(1, "$"))
+function! s:buffer.__init(first, last)
+	let self.packer = s:make_text(getline(a:first, a:last))
 	let self.draw_text = self.packer.__text
 	let self.buffer_lnum = line("$")
+	let self.lnum_offset = a:first - 1
 	let self.col_offset = max([strlen(self.buffer_lnum), &l:numberwidth])
 	let self.show_number = &l:number
 	call self.setpos(getpos("."))
@@ -77,8 +78,10 @@ function! s:buffer.__init()
 endfunction
 
 
-function! s:buffer.start()
-	call self.__init()
+function! s:buffer.start(...)
+	let firstline = get(a:, 1, 1)
+	let lastline  = get(a:, 2, '$')
+	call self.__init(firstline, lastline)
 	if self.show_number
 		call self.draw(1)
 		call self.setpos([line("."), col(".") + self.col_offset])
@@ -108,7 +111,7 @@ endfunction
 
 function! s:buffer.get_unpack_pos()
 	let [pos, text] = self.packer.unpack(self.pos)
-	return [pos[0], pos[1] - self.col_offset]
+	return [pos[0] + self.lnum_offset, pos[1] - self.col_offset]
 endfunction
 
 
@@ -129,7 +132,7 @@ function! s:buffer.set_buffer_text(text)
 	silent % delete _
 	if self.show_number
 		let format = "%". (self.col_offset - 1). "d %s"
-		call setline(1, map(copy(a:text), "printf(format, v:val.lnum, v:val.line == '' ? ' ' : v:val.line)"))
+		call setline(1, map(copy(a:text), "printf(format, v:val.lnum + self.lnum_offset, v:val.line == '' ? ' ' : v:val.line)"))
 	else
 		call setline(1, map(copy(a:text), "v:val.line"))
 	endif
