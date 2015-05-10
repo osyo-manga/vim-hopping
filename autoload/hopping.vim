@@ -85,6 +85,7 @@ function! hopping#load_vital()
 	let s:Highlight = s:V.import("Coaster.Highlight")
 	let s:Position = s:V.import("Coaster.Position")
 	let s:Commandline  = s:V.import("Over.Commandline")
+	let s:Modules  = s:V.import("Over.Commandline.Modules")
 	let s:Migemo  = s:V.import("Migemo.Interactive")
 
 	return s:V
@@ -289,7 +290,6 @@ let s:cmdline = s:Commandline.make_standard("Input:> ")
 
 function! s:cmdline.__execute__(cmd)
 	let substitute = s:parse_substitute("%s/" . a:cmd)
-	if substitute[2] != ""
 		execute printf("%d,%ds/%s", self._config.firstline, self._config.lastline, a:cmd)
 		return
 	endif
@@ -302,6 +302,7 @@ endfunction
 call s:cmdline.disconnect("HistAdd")
 call s:cmdline.connect("LockBuffer")
 call s:cmdline.connect("Scroll")
+call s:cmdline.connect(s:Modules.make("History", "/"))
 
 
 let g:hopping#keymapping = get(g:, "hopping#keymapping", {})
