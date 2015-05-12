@@ -262,7 +262,7 @@ function! s:filter.on_enter(cmdline)
 		call s:Highlight.highlight('linenr', "LineNR", '^\s*\d\+ ')
 		let &l:number = 0
 		let &listchars = substitute(&listchars, 'trail:.,\?', "", "g")
-		let &listchars = substitute(&listchars, 'eol.,\?', "", "g")
+		let &listchars = substitute(&listchars, 'eol:.,\?', "", "g")
 	endif
 
 	call self.update(a:cmdline.getline())
