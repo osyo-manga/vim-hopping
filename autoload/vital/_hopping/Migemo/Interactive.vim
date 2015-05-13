@@ -18,7 +18,7 @@ endfunction
 
 
 function! s:make_process()
-	let process = s:Process.make_interactive("cmigemo", 'QUERY:')
+	let process = s:Process.make_interactive(s:Migemo.migemo_command(), 'QUERY:')
 	let dict = s:Migemo.migemo_dict()
 	call process.start('-v -d "' . dict . '"', "\n")
 	return process
@@ -26,7 +26,7 @@ endfunction
 
 
 function! s:_init()
-	if !executable("cmigemo")
+	if !executable(s:Migemo.migemo_command())
 		throw "vital-migemo: cmigemo is not installed."
 	endif
 	if exists("s:cmigemo")

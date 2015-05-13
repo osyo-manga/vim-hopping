@@ -31,6 +31,8 @@ function! s:_search_dict(name)
           \ '/usr/local/share/',
           \ '/usr/share/cmigemo/',
           \ '/usr/share/',
+          \ '/opt/boxen/homebrew/opt/cmigemo/share/cmigemo/',
+          \ '/opt/boxen/homebrew/opt/cmigemo/share/',
           \ ]
       let path = path . a:name
       if filereadable(path)
@@ -80,16 +82,34 @@ function! s:migemo_dict()
 endfunction
 
 
-function! s:cmigemo_command(word)
-	let dict = s:migemo_dict()
-	return 'cmigemo -v -w "' . a:word . '" -d "' . dict . '"'
+function! s:set_migemo_command(cmd)
+	let s:migemo_command_ = a:cmd
+endfunction
+call s:set_migemo_command("cmigemo")
+
+
+function! s:migemo_command()
+	return s:migemo_command_
 endfunction
 
+
+function! s:generate_migemo_command(word)
+	let dict = s:migemo_dict()
+	let cmd = s:migemo_command()
+	return cmd . ' -v -w "' . a:word . '" -d "' . dict . '"'
+endfunction
+
+
+function! s:cmigemo_command(word)
+	return s:generate_migemo_command(a:word)
+endfunction
+
+
 function! s:_cmigemo(word)
-	if !executable("cmigemo")
+	if !executable(s:migemo_command())
 		throw "vital-migemo: cmigemo is not installed."
 	endif
-	return s:Process.system(s:cmigemo_command(a:word))
+	return s:Process.system(s:generate_migemo_command(a:word))
 endfunction
 
 
