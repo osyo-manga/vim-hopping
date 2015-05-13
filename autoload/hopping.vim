@@ -340,4 +340,32 @@ function! hopping#start(...)
 endfunction
 
 
+
+let s:parser = s:V.import("ArgumentParser").new({'validate_unknown': 0})
+let s:parser = s:V.import("ArgumentParser").new()
+call s:parser.add_argument("--prompt", "prompt string", {
+\	'kind': s:parser.kinds.value,
+\})
+
+call s:parser.add_argument("--input", "default input commandline", {
+\	'kind': s:parser.kinds.value,
+\})
+
+
+function! hopping#command_complete(...)
+	return call(s:parser.complete, a:000, s:parser)
+endfunction
+
+
+function! hopping#command(...) abort
+	let option = call(s:parser.parse, a:000, s:parser)
+	if empty(option)
+		return
+	endif
+	call hopping#start(option)
+endfunction
+
+
+
+
 let &cpo = s:save_cpo

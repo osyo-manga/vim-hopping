@@ -25,16 +25,38 @@ FAQ				|hopping-faq|
 ------------------------------------------------------------------------------
 コマンド					*hopping-commands*
 
-:HoppingStart [{input}]				*:HoppingStart*
+:HoppingStart [{options}]			*:HoppingStart*
 	バッファラインのフィルタリングを開始します。
-	{input} を渡すとその文字列が入力された状態で開始します。
-
+	このコマンドに渡せるオプションは |hopping-options| を参照してください
+	。
 
 ------------------------------------------------------------------------------
 キーマッピング					*hopping-key-mappings*
 
 <Plug>(hopping-start)				*<Plug>(hopping-start)*
 	|:HoppingStart| を呼び出します。
+
+
+------------------------------------------------------------------------------
+オプション					*hopping-options*
+
+|:HoppingStart| に渡すことができるコマンドオプションです。
+また、コマンドラインで設定したオプションは |hopping-variables| の設定よりも
+優先して使用されます。
+
+
+Example: >
+	" プロンプトを "> " に設定して、"hoge" が入力された状態で開始される
+	:HoppingStart --prompt='> ' --input='hoge'
+<
+	
+	--prompt={value}
+	プロンプトに設定される文字列です
+	Default: |g:hopping#prompt|
+
+	--input={value}
+	開始時に {value} が入力された状態で開始されます。
+	Default: ""
 
 
 ==============================================================================
@@ -48,6 +70,13 @@ g:hopping#prompt				*g:hopping#prompt*
 Default: >
 	let g:hopping#prompt = "Input:> "
 <
+
+g:hopping#enable_migemo				*g:hopping#enable_migemo*
+	1 を設定されていると cmigemo を使用した絞り込みが行われます。
+Default: >
+	let g:hopping#enable_migemo = 1
+<
+
 
 ==============================================================================
 ハイライト					*hopping-highlight*

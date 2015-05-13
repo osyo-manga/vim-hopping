@@ -7,9 +7,11 @@ let g:loaded_hopping = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
-command! -nargs=* -range=%
+command! -nargs=? -range=% -complete=customlist,hopping#command_complete
 \	HoppingStart
-\	call hopping#start({ "input" : <q-args>, "firstline" : <line1>, "lastline" : <line2>})
+\	call hopping#command(<q-bang>, [<line1>, <line2>], <f-args>)
+" \	call hopping#start({ "input" : <q-args>, "firstline" : <line1>, "lastline" : <line2>})
+" \	call hopping#start({ "input" : <q-args>, "firstline" : <line1>, "lastline" : <line2>})
 
 map <silent> <Plug>(hopping-start) :HoppingStart<CR>
 
