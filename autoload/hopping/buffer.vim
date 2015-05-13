@@ -16,9 +16,6 @@ function! s:text.filter(pat)
 	endif
 	let self.__prev_pat = a:pat
 	let pat = a:pat
-	if &smartcase
-		let pat =  '\C' . pat
-	endif
 	let self.__prev_text = filter(copy(src), "v:val.line =~ pat")
 	return self.__prev_text
 endfunction
