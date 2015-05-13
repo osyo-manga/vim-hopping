@@ -276,6 +276,7 @@ function! s:filter.on_leave(cmdline)
 	if a:cmdline.exit_code() != 0
 		call self.view.unlock()
 	endif
+	call histadd("/", a:cmdline.getline())
 endfunction
 
 
@@ -295,7 +296,6 @@ function! s:cmdline.__execute__(cmd)
 	endif
 	if self.get_module("IncFilter").is_stay == 0
 		call search(a:cmd, "c")
-		call histadd("/", a:cmd)
 	endif
 endfunction
 
