@@ -341,7 +341,6 @@ endfunction
 
 
 
-let s:parser = s:V.import("ArgumentParser").new({'validate_unknown': 0})
 let s:parser = s:V.import("ArgumentParser").new()
 call s:parser.add_argument("--prompt", "prompt string", {
 \	'kind': s:parser.kinds.value,
