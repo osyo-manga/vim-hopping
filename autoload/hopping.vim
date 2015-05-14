@@ -361,6 +361,8 @@ function! hopping#command(...) abort
 	if empty(option)
 		return
 	endif
+	let option.firstline = option.__range__[0]
+	let option.lastline  = option.__range__[1]
 	call hopping#start(option)
 endfunction
 
