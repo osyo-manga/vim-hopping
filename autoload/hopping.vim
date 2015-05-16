@@ -291,6 +291,7 @@ let s:cmdline = s:Commandline.make_standard("Input:> ")
 
 function! s:cmdline.__execute__(cmd)
 	let substitute = s:parse_substitute("%s/" . a:cmd)
+	if substitute[2] != ""
 		execute printf("%d,%ds/%s", self._config.firstline, self._config.lastline, a:cmd)
 		return
 	endif
