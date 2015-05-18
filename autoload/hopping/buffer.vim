@@ -68,8 +68,11 @@ function! s:buffer.__init(first, last)
 	let self.draw_text = self.packer.__text
 	let self.buffer_lnum = line("$")
 	let self.lnum_offset = a:first - 1
-	let self.col_offset = max([strlen(self.buffer_lnum), &l:numberwidth])
+	let self.col_offset = 0
 	let self.show_number = &l:number
+	if self.show_number
+		let self.col_offset = max([strlen(self.buffer_lnum), &l:numberwidth])
+	endif
 	call self.setpos(getpos("."))
 	let self.view = winsaveview()
 endfunction
