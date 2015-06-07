@@ -53,6 +53,7 @@ function! s:silent_substitute(range, pattern, string, flags)
 		let old_search = @/
 		let check = b:changedtick
 		silent execute printf('%ss/%s/%s/%s', a:range, a:pattern, a:string, flags)
+		nohlsearch
 		call histdel("search", -1)
 " 		let &l:modified = s:old_modified
 	catch /\v^Vim%(\(\a+\))=:(E121)|(E117)|(E110)|(E112)|(E113)|(E731)|(E475)|(E15)/
