@@ -4,8 +4,6 @@ It is under development.
 
 ## Introduction
 
-hopping.vim is incremental buffer line filtering Vim plugin.
-
 ## Installation
 
 [Neobundle](https://github.com/Shougo/neobundle.vim) / [Vundle](https://github.com/gmarik/Vundle.vim) / [vim-plug](https://github.com/junegunn/vim-plug)
