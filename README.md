@@ -36,4 +36,7 @@ git clone https://github.com/osyo-manga/vim-hopping ~/.vim/bundle/vim-hopping
 nmap <Space>/ <Plug>(hopping-start)
 ```
 
+## Substitute
+
+![hopping](https://cloud.githubusercontent.com/assets/214488/8390886/0e5e85f2-1ce5-11e5-907a-b3cc274dd00d.gif)
 
