@@ -237,7 +237,6 @@ function! s:filter.on_enter(cmdline)
 	execute printf(hl_f, "HoppingSubstituteHiddenEnd", s:hl_mark_end)
 
 	let string  = s:hl_mark_center . '\zs\_.\{-}\ze' . s:hl_mark_end
-" 	call s:Highlight.highlight("SubString", g:over#command_line#substitute#highlight_string, string, 100)
 	call s:Highlight.highlight("SubString", "Error", string, 100)
 
 	let self._config = a:cmdline._config
