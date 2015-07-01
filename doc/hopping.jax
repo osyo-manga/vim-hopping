@@ -17,6 +17,8 @@ FAQ				|hopping-faq|
 概要						*hopping-introduction*
 
 *hopping.vim* バッファラインをインクリメンタルに絞り込みを行うプラグインです。
+また、入力時に検索パターンのあとに / を追加することで置換とプレビューも行わ
+れます。
 
 
 ==============================================================================
@@ -27,6 +29,10 @@ FAQ				|hopping-faq|
 
 :HoppingStart [{options}]			*:HoppingStart*
 	バッファラインのフィルタリングを開始します。
+	コマンドラインに検索パターンを入力することで、そのパターンにマッチした
+	バッファラインのみが表示されます。
+ 	また、{pattern}/{string} という入力を行うことで置換とそのプレビューが
+	行われます。
 	このコマンドに渡せるオプションは |hopping-options| を参照してください
 	。
 
@@ -75,33 +81,40 @@ g:hopping#enable_migemo				*g:hopping#enable_migemo*
 	1 を設定されていると cmigemo を使用した絞り込みが行われます。
 Default: >
 	let g:hopping#enable_migemo = 1
-<
+
+
+g:hopping#keymapping				*g:hopping#keymapping*
+	|hopping.vim| のコマンドラインで使用できるキーマッピングを設定します。
+	詳しくは |hopping-command_line-key-mappings| を参照してください。
+
 
 
 ==============================================================================
-ハイライト					*hopping-highlight*
+					*hopping-command_line-key-mappings*
+hopping のコマンドラインのキーマッピング
 
-ハイライトの設定を行う辞書です。
-ハイライトの設定には以下のキーの値が設定できます。
+|hopping.vim| のコマンドラインで使用できるキーマッピングです。
+g:hopping#keymapping で任意のキーに処理を割り当てる事ができます。
 
-- "group"					*hopping-highlight-group*
-  ハイライトグループを設定します。
-  空の文字列が設定されているとハイライトはされません。
-
-- "priority"					*hopping-highlight-priority*
-  |matchadd()| の {priority} に設定される数値です。
-
-- "format"					*hopping-highlight-format*
-  単語をハイライトする際のフォーマットを設定します。
+キー						処理~
+<Over>(hopping-next)		マッチした次の候補へ移動
+<Over>(hopping-prev)		マッチした前の候補へ移動
+<Over>(scroll-y)		|CTRL-y| 相当
+<Over>(scroll-u)		|CTRL-u| 相当
+<Over>(scroll-f)		|CTRL-f| 相当
+<Over>(scroll-e)		|CTRL-e| 相当
+<Over>(scroll-d)		|CTRL-d| 相当
+<Over>(scroll-b)		|CTRL-b| 相当
 
 Example: >
-	" 単語をアンダーラインでハイライトして、
-	" matchadd() の優先順位を 1000 にする
-	let g:hopping#highlight = {
-	\	"group"    : "hoppingUnderline",
-	\	"priority" : 1000
+	let g:hopping#keymapping = {
+	\	"\<C-n>" : "<Over>(hopping-next)",
+	\	"\<C-p>" : "<Over>(hopping-prev)",
+	\	"\<C-u>" : "<Over>(scroll-u)",
+	\	"\<C-d>" : "<Over>(scroll-d)",
 	\}
 <
+
 ==============================================================================
 FAQ						*hopping-faq*
 
