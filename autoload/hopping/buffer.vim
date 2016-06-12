@@ -16,7 +16,10 @@ function! s:text.filter(pat)
 	endif
 	let self.__prev_pat = a:pat
 	let pat = a:pat
-	let self.__prev_text = filter(copy(src), "v:val.line =~ pat")
+	try
+		let self.__prev_text = filter(copy(src), "v:val.line =~ pat")
+	catch /^Vim\%((\a\+)\)\=:E866/
+	endtry
 	return self.__prev_text
 endfunction
 

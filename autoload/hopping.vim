@@ -77,7 +77,8 @@ function! hopping#load_vital()
 	if g:hopping#debug_vital
 		let s:V = vital#of("vital")
 	else
-		let s:V = vital#of("hopping")
+" 		let s:V = vital#of("hopping")
+		let s:V = vital#hopping#of()
 	endif
 	call s:V.unload()
 
@@ -342,13 +343,15 @@ endfunction
 
 
 
-let s:parser = s:V.import("ArgumentParser").new()
+let s:A = s:V.import("ArgumentParser")
+let s:parser = s:A.new()
+
 call s:parser.add_argument("--prompt", "prompt string", {
-\	'kind': s:parser.kinds.value,
+\	'type': s:A.types.value,
 \})
 
 call s:parser.add_argument("--input", "default input commandline", {
-\	'kind': s:parser.kinds.value,
+\	'type': s:A.types.value,
 \})
 
 
