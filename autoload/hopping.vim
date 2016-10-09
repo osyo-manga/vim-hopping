@@ -237,6 +237,14 @@ function! s:filter.on_enter(cmdline)
 	execute printf(hl_f, "HoppingSubstituteHiddenCenter", s:hl_mark_center)
 	execute printf(hl_f, "HoppingSubstituteHiddenEnd", s:hl_mark_end)
 
+	if !hlexists("HoppingCursor")
+		if hlexists("Cursor")
+			highlight default link HoppingCursor Cursor
+		else
+			highlight default HoppingCursor term=reverse cterm=reverse gui=reverse
+		endif
+	endif
+
 	let string  = s:hl_mark_center . '\zs\_.\{-}\ze' . s:hl_mark_end
 	call s:Highlight.highlight("SubString", "Error", string, 100)
 
