@@ -117,7 +117,7 @@ function! s:on_search_pattern(pat, ...)
 	else
 		call s:Highlight.highlight("search", "Search", a:pat)
 	endif
-	call s:Highlight.highlight("cursor", "Cursor", s:Position.as_pattern(pos))
+	call s:Highlight.highlight("cursor", "HoppingCursor", s:Position.as_pattern(pos))
 endfunction
 
 
