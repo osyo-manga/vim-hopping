@@ -348,10 +348,15 @@ endfunction
 
 
 function! s:start(config)
+    let l:foldoption = &foldenable
+    set nofoldenable
+
 	let s:cmdline._config = a:config
 	call s:cmdline.set_prompt(a:config.prompt)
 	call s:cmdline.connect(s:make_incfilter(a:config))
 	let exit_code = s:cmdline.start(a:config.input)
+
+	let &foldenable = l:foldoption
 	return exit_code
 endfunction
 
