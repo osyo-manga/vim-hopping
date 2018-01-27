@@ -221,6 +221,12 @@ endfunction
 
 function! s:filter.on_execute_pre(cmdline)
 	let self.is_execute = 1
+
+	if self._has_mkview
+		loadview 1
+		let self._has_mkview = 0
+	endif
+
 	call self.locker.unlock()
 	if self.is_stay
 		let pos = self.buffer.get_unpack_pos()
@@ -290,7 +296,9 @@ endfunction
 function! s:filter.on_leave(cmdline)
 	if self._has_mkview
 		loadview 1
+		let self._has_mkview = 0
 	endif
+
 	call s:Highlight.clear_all()
 	call self.locker.unlock()
 
