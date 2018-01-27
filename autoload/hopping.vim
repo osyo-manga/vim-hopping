@@ -117,7 +117,7 @@ function! s:on_search_pattern(pat, ...)
 	else
 		call s:Highlight.highlight("search", "Search", a:pat)
 	endif
-	call s:Highlight.highlight("cursor", "Cursor", s:Position.as_pattern(pos))
+	call s:Highlight.highlight("cursor", "HoppingCursor", s:Position.as_pattern(pos))
 endfunction
 
 
@@ -260,11 +260,20 @@ function! s:filter.on_enter(cmdline)
 \		"&hlsearch",
 \		"&l:conceallevel",
 \		"&l:concealcursor",
+\		"&l:foldenable",
 \		"@/",
 \	)
 	nohlsearch
 	let &l:modifiable = 1
 	let &l:cursorline = 1
+
+	if &l:foldenable
+		mkview 1
+		let self._has_mkview = 1
+		let &l:foldenable = 0
+	else
+		let self._has_mkview = 0
+	endif
 
 	call self.buffer.start(self._config.firstline, self._config.lastline)
 	if self.buffer.show_number
@@ -279,6 +288,9 @@ endfunction
 
 
 function! s:filter.on_leave(cmdline)
+	if self._has_mkview
+		loadview 1
+	endif
 	call s:Highlight.clear_all()
 	call self.locker.unlock()
 
