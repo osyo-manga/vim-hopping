@@ -262,6 +262,7 @@ function! s:filter.on_enter(cmdline)
 \		"&l:modifiable",
 \		"&l:cursorline",
 \		"&l:number",
+\		"&l:relativenumber",
 \		"&listchars",
 \		"&hlsearch",
 \		"&l:conceallevel",
@@ -272,6 +273,7 @@ function! s:filter.on_enter(cmdline)
 	nohlsearch
 	let &l:modifiable = 1
 	let &l:cursorline = 1
+	let &l:relativenumber = 0
 
 	if &l:foldenable
 		mkview 1
