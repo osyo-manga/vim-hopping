@@ -275,8 +275,8 @@ function! s:filter.on_enter(cmdline)
 	let &l:cursorline = 1
 	let &l:relativenumber = 0
 
-	if &l:foldenable
-		mkview 1
+	if &l:foldenable && isdirectory(&viewdir)
+		mkview
 		let self._has_mkview = 1
 		let &l:foldenable = 0
 	else
