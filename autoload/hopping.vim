@@ -275,7 +275,8 @@ function! s:filter.on_enter(cmdline)
 	let &l:cursorline = 1
 	let &l:relativenumber = 0
 
-	if &l:foldenable && isdirectory(&viewdir)
+	" MEMO: :mkview が無名バッファの場合に失敗する
+	if &l:foldenable && isdirectory(&viewdir) && bufname("%") != ""
 		mkview
 		let self._has_mkview = 1
 		let &l:foldenable = 0
