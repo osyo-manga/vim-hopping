@@ -14,7 +14,7 @@ function! s:parse_substitute(word)
 	let command      = 's%[ubstitute]'
 	let first_slash  = '([\x00-\xff]&[^\\"|[:alnum:][:blank:]])'
 	let pattern      = '(%(\\.|.){-})'
-	let second_slash = '\2'
+	let second_slash = '(%(\2))'
 	let string       = '(%(\\.|.){-})'
 	let flags        = '%(\2([&cegiInp#lr]*))?'
 	let parse_pattern
@@ -29,7 +29,7 @@ function! s:parse_substitute(word)
 \		. string
 \		. flags
 \		. ')?$'
-	let result = matchlist(a:word, parse_pattern)[1:5]
+	let result = matchlist(a:word, parse_pattern)[1:6]
 	if type(result) == type(0) || empty(result)
 		return []
 	endif
@@ -153,7 +153,7 @@ let s:hl_mark_center = ''
 let s:hl_mark_end   = ''
 
 
-function! s:filter.substitute_preview(range, pattern, string, flags)
+function! s:filter.substitute_preview(range, pattern, slash, string, flags)
 	let pattern = self.buffer.convert_search_pattern(a:pattern)
 	let string = a:string
 	if string =~ '^\\=.\+'
@@ -184,7 +184,7 @@ function! s:filter.update(input)
 		call self.update_filter(input)
 	endif
 
-	if substitute[2] != ""
+	if substitute[2] == "/"
 		let self._redraw = call(self.substitute_preview, substitute, self)
 		setlocal conceallevel=2
 		setlocal concealcursor=n
