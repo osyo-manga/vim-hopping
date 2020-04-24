@@ -1,0 +1,128 @@
+*hopping.txt* A plugin for incrementally filtering the current buffer lines.
+
+===============================================================================
+Table of contents                                     *hopping-contents*
+
+Overview                          |hopping-introduction|
+Interface                         |hopping-interface|
+  Commands                          |hopping-commands|
+  Key mappings                      |hopping-key-mappings|
+Settings                          |hopping-setting|
+  Variables                         |hopping-variables|
+Highlighting                      |hopping-highlight|
+FAQ                               |hopping-faq|
+
+
+===============================================================================
+Overview                                              *hopping-introduction*
+
+*hopping.vim* This is a plugin that incrementally narrows down buffer lines.
+It also replaces and previews by adding a / after the search pattern as you
+type.
+
+NOTE: 'relativenumber' is not supported.
+
+
+
+===============================================================================
+Interface                                              *hopping-interface*
+
+-------------------------------------------------------------------------------
+Commands                                               *hopping-commands*
+
+:HoppingStart [{options}]                              *:HoppingStart*
+          Starts filtering buffer lines.
+          By entering a search pattern on the command line the buffer is
+          filtered to only display matching buffer lines.
+          Also, by entering {pattern}/{string}, the replacements will be
+          displayed as a preview
+          See |hopping-options| for the options that can be passed to this
+          command.
+
+-------------------------------------------------------------------------------
+Key mapping                                           *hopping-key-mappings*
+
+<Plug>(hopping-start)                                 *<Plug>(hopping-start)*
+          Call |:HoppingStart|.
+
+
+-------------------------------------------------------------------------------
+Options                                               *hopping-options*
+
+Command options that can be passed to |:HoppingStart|.
+Also, the options set on the command line will be preferred over those set via
+|hopping-variables|.
+
+
+Example: >
+        Start with a prompt set to ">" and "hoge" entered
+        :HoppingStart --prompt='> ' --input='hoge'
+<
+
+        --prompt={value}
+        The string that will be used for the prompt.
+        Default: |g:hopping#prompt|
+
+        --input={value}
+        Start with {value} already entered.
+        Default: ""
+
+
+===============================================================================
+Settings                                              *hopping-setting*
+
+-------------------------------------------------------------------------------
+Variables                                             *hopping-variables*
+
+g:hopping#prompt                                      *g:hopping#prompt*
+        A command line prompt for entering the filter string.
+Default: >
+        let g:hopping#prompt = "Input:> "
+<
+
+g:hopping#enable_migemo                               *g:hopping#enable_migemo*
+        If it is set to 1, narrowing down will be performed using cmigemo.
+Default: >
+        let g:hopping#enable_migemo = 1
+
+
+g:hopping#keymapping                                  *g:hopping#keymapping*
+        Set the keymappings that can be used in the command line of
+        |hopping.vim|.
+        See |hopping-command_line-key-mappings| for more information.
+
+
+
+===============================================================================
+                                            *hopping-command_line-key-mappings*
+hopping command line key mappings
+
+Key mappings that can be used on the command line of |hopping.vim|.
+You can use g:hopping#keymapping to assign actions to keys.
+
+Key                                 Action
+<Over> (hopping-next)               Move to the next matching candidate
+<Over> (hopping-prev)               Move to previous matched candidate
+<Over> (scroll-y)                   |CTRL-y| Equivalent
+<Over> (scroll-u)                   |CTRL-u| Equivalent
+<Over> (scroll-f)                   |CTRL-f| Equivalent
+<Over> (scroll-e)                   |CTRL-e| Equivalent
+<Over> (scroll-d)                   |CTRL-d| Equivalent
+<Over> (scroll-b)                   |CTRL-b| Equivalent
+
+Example: >
+        let g:hopping#keymapping = {
+        \       "\<C-n>" : "<Over>(hopping-next)",
+        \       "\<C-p>" : "<Over>(hopping-prev)",
+        \       "\<C-u>" : "<Over>(scroll-u)",
+        \       "\<C-d>" : "<Over>(scroll-d)",
+        \}
+<
+
+===============================================================================
+FAQ                                                   *hopping-faq*
+
+
+
+===============================================================================
+vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl
